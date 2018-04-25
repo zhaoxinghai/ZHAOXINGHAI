@@ -1,0 +1,10 @@
+C:\Users\H158837\1Person\Web\MyCMS.Web\bin\Debug\netcoreapp2.0\MyCMS.Web.deps.json
+C:\Users\H158837\1Person\Web\MyCMS.Web\bin\Debug\netcoreapp2.0\MyCMS.Web.runtimeconfig.json
+C:\Users\H158837\1Person\Web\MyCMS.Web\bin\Debug\netcoreapp2.0\MyCMS.Web.runtimeconfig.dev.json
+C:\Users\H158837\1Person\Web\MyCMS.Web\bin\Debug\netcoreapp2.0\MyCMS.Web.dll
+C:\Users\H158837\1Person\Web\MyCMS.Web\bin\Debug\netcoreapp2.0\MyCMS.Web.pdb
+C:\Users\H158837\1Person\Web\MyCMS.Web\obj\Debug\netcoreapp2.0\MyCMS.Web.csproj.CoreCompileInputs.cache
+C:\Users\H158837\1Person\Web\MyCMS.Web\obj\Debug\netcoreapp2.0\MyCMS.Web.AssemblyInfoInputs.cache
+C:\Users\H158837\1Person\Web\MyCMS.Web\obj\Debug\netcoreapp2.0\MyCMS.Web.AssemblyInfo.cs
+C:\Users\H158837\1Person\Web\MyCMS.Web\obj\Debug\netcoreapp2.0\MyCMS.Web.dll
+C:\Users\H158837\1Person\Web\MyCMS.Web\obj\Debug\netcoreapp2.0\MyCMS.Web.pdb
