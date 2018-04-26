@@ -18,38 +18,74 @@ namespace _1Person
 
     class TheradTest
     {
+        private Object locker = new Object();
+
+        private Semaphore sema = new Semaphore(0,5);
+
+        public static Mutex mutex = new Mutex();
+
+        //autoEvent.set(),autoEvent.WaitOne();
+        static AutoResetEvent autoEvent = new AutoResetEvent(false);  
+
+        //manualEvent.set(),manualEvent.reset(),manualEvent.WaitOne();
+        static ManualResetEvent manualEvent = new ManualResetEvent(false);
+
         public void Test()
         {
-            //mothod thread
-            Thread thread = new Thread(ThreadMethod);     //执行的必须是无返回值的方法
-            //thread.Start(54);
-
-            //member thread
-            var job = new Job();
-            Thread th = new Thread(job.Run);
-            th.Start();
-
-            //threadpool
-            ThreadPool.SetMaxThreads(5, 5);
-            for(int i = 0;i<100;i++)
+            lock(locker)
             {
-                job = new Job();
-                job.count = i;
-                ThreadPool.QueueUserWorkItem(ThreadPoolMethod,job);
+                //mothod thread
+                Thread thread = new Thread(ThreadMethod);
+                //thread.Start(54);
+
+                //member thread
+                var job = new Job();
+                Thread th = new Thread(job.Run);
+                th.Start();
+
+                //threadpool
+                ThreadPool.SetMaxThreads(5, 5);
+                for(int i = 0;i<100;i++)
+                {
+                    job = new Job();
+                    job.count = i;
+                    ThreadPool.QueueUserWorkItem(ThreadPoolMethod,job);
+                }
             }
         }
 
         public static void ThreadMethod(object parameter)  
         {
+            mutex.WaitOne();
+
             int t = (int)parameter;
 
             Console.WriteLine("ThreadMethod 我是:{0},我要终止了", Thread.CurrentThread.Name);
+
+            mutex.ReleaseMutex();
         }
 
         public static void ThreadPoolMethod(object parameter)  
         {
             Job job = (Job)parameter;
             job.Run();
+        }
+
+
+        private static Mutex m;
+        public static bool IsSingleInstance()
+        {
+            //是否需要创建一个应用
+            Boolean isCreateNew = false;
+            try
+            {
+               m = new Mutex(initiallyOwned: true, name: "SingleInstanceMutex", createdNew: out isCreateNew);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            return isCreateNew;
         }
     }
 }

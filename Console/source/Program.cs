@@ -16,8 +16,12 @@ namespace _1Person
             thr.Test();
 
             //test socket
-            var soc = new Socket();
-            soc.Test();
+            var net = new MySocket();
+            net.Test();
+
+            //file system
+            var file = new FileSystem();
+            file.Test();
 
             Thread.Sleep(1000000);
         }
