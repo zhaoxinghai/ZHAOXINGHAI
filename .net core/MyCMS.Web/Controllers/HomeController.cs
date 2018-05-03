@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using MyCMS.Web.Models;
 
@@ -13,16 +14,13 @@ namespace MyCMS.Web.Controllers
         public int test = 0;
         public IActionResult Index()
         {
-            test++;
-
-            int a = 3 + 4;
+            int id = Thread.CurrentThread.ManagedThreadId; 
             return View();
         }
 
         public IActionResult About()
         {
-            test++;
-            int a = 3 + 4;
+            int id = Thread.CurrentThread.ManagedThreadId; 
             ViewData["Message"] = "Your application description page.";
 
             return View();
@@ -30,6 +28,7 @@ namespace MyCMS.Web.Controllers
 
         public IActionResult Contact()
         {
+            int id = Thread.CurrentThread.ManagedThreadId; 
             ViewData["Message"] = "Your contact page.";
 
             return View();
