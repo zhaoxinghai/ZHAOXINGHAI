@@ -66,7 +66,7 @@ namespace _1Person
                     byte[] text = new byte[r];
                     Array.Copy(buffer, text, r);
                     string str = System.Text.Encoding.Default.GetString ( text );
-                    Console.WriteLine("{0}",str);
+                    System.Console.WriteLine("{0}",str);
                 }
 
                 count += r;

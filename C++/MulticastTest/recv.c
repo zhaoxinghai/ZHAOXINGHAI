@@ -11,7 +11,7 @@
 #include <sys/ioctl.h>
 
 #define MSGBUFSIZE 256
-#define TRAM_STATUS_ADDR "224.1.236.0"
+#define TRAM_STATUS_ADDR "224.1.236.1"
 #define TRAM_STATUS_RECV_PORT 10500
 
 int main()

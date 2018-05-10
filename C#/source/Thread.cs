@@ -12,7 +12,7 @@ namespace _1Person
         public void Run()
         {
             Thread.Sleep(2000);
-            Console.WriteLine("Job :{0}, Exit", count);
+            System.Console.WriteLine("Job :{0}, Exit", count);
         }
     }
 
@@ -60,7 +60,7 @@ namespace _1Person
 
             int t = (int)parameter;
 
-            Console.WriteLine("ThreadMethod 我是:{0},我要终止了", Thread.CurrentThread.Name);
+            System.Console.WriteLine("ThreadMethod 我是:{0},我要终止了", Thread.CurrentThread.Name);
 
             mutex.ReleaseMutex();
         }
@@ -83,7 +83,7 @@ namespace _1Person
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                System.Console.WriteLine(ex.ToString());
             }
             return isCreateNew;
         }

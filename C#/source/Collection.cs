@@ -42,28 +42,28 @@ namespace _1Person
             }
 
             //Read
-            Console.WriteLine("List: ");
+            System.Console.WriteLine("List: ");
             foreach (var item in list)
             {
-                Console.WriteLine(item);
+                System.Console.WriteLine(item);
             }
 
-            Console.WriteLine("\nLinkedList: ");
+            System.Console.WriteLine("\nLinkedList: ");
             foreach (var item in linkedList)
             {
-                Console.WriteLine(item);
+                System.Console.WriteLine(item);
             }
 
-            Console.WriteLine("\nDictionary: ");
+            System.Console.WriteLine("\nDictionary: ");
             foreach (var item in dic)
             {
-                Console.WriteLine("Key = {0}, Value = {1}", item.Key, item.Value);
+                System.Console.WriteLine("Key = {0}, Value = {1}", item.Key, item.Value);
             }
 
-            Console.WriteLine("\nHashSet: ");
+            System.Console.WriteLine("\nHashSet: ");
             foreach (var item in set)
             {
-                Console.WriteLine(item);
+                System.Console.WriteLine(item);
             }
 
             //List remove

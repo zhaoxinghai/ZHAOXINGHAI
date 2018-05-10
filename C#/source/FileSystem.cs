@@ -30,7 +30,7 @@ namespace _1Person
             }
             catch (IOException e)
             {
-                Console.WriteLine(e.ToString());
+                System.Console.WriteLine(e.ToString());
             }
         }
 
