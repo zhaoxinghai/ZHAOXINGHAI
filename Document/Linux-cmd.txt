@@ -1,0 +1,126 @@
+● mount: 
+mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.34:/media/honeywell/Work/Source/ETCS/Bin /mnt
+mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.32:/media/honeywell/Work/Source/ETCS-VOC/Bin /mnt
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/mnt/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/Bin/
+
+sys/class/backlight/backlight/
+echo 100~255 > brightness
+
+
+echo 0~255 >/sys/class/leds/beep/brightness
+-------------------------------------------------------------------------------
+
+● 查看当前路径 pwd
+● 文件查找 find [路径] [参数] : find . -name "test.adp" | find / -name "test.adp"
+● 新建文件 touch filename
+● 新建文件夹 mkdir directory
+● 删除文件夹 rm -r directory
+● 移动文件夹|文件 mv directory directory2
+● 新建文件 touch filename
+● 复制文件 cp filename filename2
+● 复制文件夹 cp -r directory/* /tmp/
+● 修改权限 chmod 777 -R directory
+● 显示文件列表 ls -l
+● 解压 tar -xvzf test.tar.gz
+● 压缩 tar -czvf test.tar.gz record.adp
+● deb包的安装(cd 到安装包的目录,dpkg -i 安装包名字)
+● 查看文件内容 cat filename.ext
+
+------------------------------------------------------------------------
+
+● 修改用户密码 sudo passwd zhao
+● 修改环境变量 /etc/profile增加以下内容(当前用户 /Home/.bashrc或/home/.bash_profile)
+  #在PATH中找到可执行文件程序的路径: export PATH=$PATH:$HOME/bin 
+  #gcc找到头文件的路径 export C_INCLUDE_PATH=/usr/include/libxml2:/MyLib
+  #g++找到头文件的路径 export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/usr/include/libxml2:/MyLib
+  #找到动态链接库的路径 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/Linux
+  #找到静态库的路径 export LIBRARY_PATH=$LIBRARY_PATH:/MyLib
+● 软链接命令 ln -s 源目录 目标快捷方式
+● IP地址设置(临时)：
+  ifconfig eth0 192.168.1.100 netmask 255.255.255.0
+● 修改固定IP地址(NPMS)	
+/etc/startup 
+vi /etc/systemd/network/Management.network
+● 显示进程 ps top 
+show thread:
+top -p "pidof process"
+top -H -p "pidof process"   线
+● 杀死进程 kill 110
+● aplay与arecord命令
+  arecord -c 1 -r 44100 -f S16_LE test.wmv
+  aplay test.wmv
+  一边采集一边播放: 
+  arecord -r48000 -c 2 -f S16_LE | aplay -r48000 -c 2
+ 
+● 查看应用安装路径： which aplay; which gcc 
+● 查看应用依赖项：ldd aplay
+● 查看ssh是否安装：ps -s | grep ssh 
+● 挂载visualBox共享文件夹：sudo mount -t vboxsf OS ~/OS/
+  设置好共享名后，进入Ubuntu系统:sudo usermod -aG vboxsf <your username>
+● NFS共享
+  #sudo apt-get install nfs-kernel-server
+  #sudo gedit  /etc/exports add item"/home/zhao/ETCS/Bin *(rw,sync,no_root_squash,no_subtree_check)"
+  #sudo /etc/init.d/nfs-kernel-server restart
+● RapidSVN
+#sudo apt-get install rapidsvn
+
+● Project SVN
+https://acssvn.honeywell.com/GreaterChina/HSF/Ethernet-Touch-Call-Station/trunk
+https://acssvn.honeywell.com/GreaterChina/HFS/PAMMI-enhancements-MTRC-Hongkong/trunk/Source
+https://acssvn.honeywell.com/GreaterChina/HFS/PAMMI-Configuration-Tool
+
+● 查看设备列表:sudo fdisk -l
+● 设置启动项 vi /etc/rc.local
+
+● D1 vlan 配置
+root[0]@DOM-47(192.168.1.47#47) [  3-] >opmode config
+root[0]@DOM-47(192.168.1.47#47) [  4+] >vlancfg -1 0
+root[0]@DOM-47(192.168.1.47#47) [  5+] >opmode normal
+
+● NPMS调试
+user:root
+pass:hon@Q#W$E%R
+start:ETCS -qws
+
+● 串口调试：前3位是黑、白、绿
+
+● CPU usage:
+CAudioPlay    带音量调节      8.3%    
+CAudioPlay    没有音量调节    3.3%
+CAudioReceive                 4.6%
+CThreadCapture                2.3%    
+CThreadPlay                   1.3%
+
+ETCS_QML                      3.3%
+QSGRenderThread 没锁屏        9.3%
+QSGRenderThread 锁屏          0.7%
+CThreadIO       GPIO检测      2.0%
+
+
+1，Pre-signal音量调节
+2，Predefine导入，增加，删除
+3，Schedule导入，增加，编辑，删除
+4，DKM检测方式变更
+5，用户权限管理(显示，操作)
+6，播放网络音源
+7，本地与网络语音拼接
+8，键盘变更
+9，本地录音，播放
+10，广播历史，播放
+11，USB支持Wav与Mp3播放
+
+问题点：
+1，Predefine，当前正在播放的Source标示。
+2，Predefine，Schedule或者record，当可以编辑的项为0时，不显示编辑按扭。
+3，Gap Time与Interval Time切换时，对应界面的提示文字没有切换。
+4，Schedule 编辑控制不会消失。
+5，Record，当列表没有数据时，不显示编辑按扭。
+6，Recent下拉界面，单击进入详情，右侧增加播放按扭（类似record界面）。
+7，Recent界面，选项Name修改成Source。
+8，登录界面，显示IP地址。
+9，新功能USB加载MP3与WAV。
+10，新功能，背光调节。
+11，Local，默认选中第一个分组，没有音源时，删除按扭不显示。
+12，下拉选择的标题，建议增加分隔栏样式，分隔3个选项。
