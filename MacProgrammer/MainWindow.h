@@ -21,7 +21,6 @@
 #include <QtSql\QtSql>
 #include <QSettings>
 #include <ws2tcpip.h>
-
 #include "../Include/ProtocolFrame.h"
 
 #define D_ProduceMode       0x00
@@ -40,6 +39,8 @@
 #define D_X618DCS                   0x11
 #define D_X618NPM                   0x12
 
+#define D_D1_ETCS                   0x20
+
 #define D_X618SpecialID             0x000011CA
 
 namespace Ui {
@@ -55,7 +56,7 @@ public:
     ~MainWindow();
 
     bool getInitFlag();
-
+    virtual void timerEvent( QTimerEvent *event);
 private slots:
     void udpSocketReadyReadSlot();
     void dataReceived(int sockfd);
@@ -78,7 +79,6 @@ private slots:
     void pushButtonFontSlot();
     void lineEditLeftSlot(QString text);
     void lineEditTopSlot(QString text);
-
 private:
     Ui::MainWindow *ui;
     bool InitFlag;
@@ -143,10 +143,18 @@ private:
     E_Error parseFrameCmdQueryNetworkArgAnswer_1(QByteArray frameData);
     unsigned short checkCrc(QByteArray cmd);
     bool initConfig();
-    bool checkMacSize();
-    bool getValidMac(QString mac, unsigned int *validMac);
-    QStringList getValidMacList();
-    QString RepairMac(QString mac);
+
+    static bool checkMacSize(int iMacPCS,QString sFirstMac, QString sLastMac,
+                             int iValidByte,int iLowestValidByte);
+
+    static bool getValidMac(QString mac, unsigned int *validMac,
+                            int iValidByte,int iLowestValidByte);
+
+    static QStringList getValidMacList(QString sFirstMac,int iPcs,
+                                int iValidByte,int iLowestValidByte);
+
+    static QString RepairMac(QString mac);
+
     int queryNetworkArg(bool send = true);
     QByteArray getFrame(unsigned char frameVersion, unsigned char frameFlag,
                         unsigned short frameNumber, unsigned int frameSrc,
@@ -162,9 +170,7 @@ private:
     void updataDeviceType(int type);
     int getDeviceType();
     QString getDeviceTypeStr();
-    bool checkX618MacSize();
     void initX618Arg();
-    bool getX618ValidMac(QString mac, unsigned int *validMac);
     QStringList getX618ValidMacList();
     QString X618RepairMac(QString mac);
     bool bindX618Udp();
@@ -185,6 +191,44 @@ private:
     unsigned short littleToBig(unsigned short data);
     void showFontInfo(QFont font);
     void printMac(QString mac);
+
+    //for D1
+private slots:
+    void pushButtonD1PreestablishClickedSlot(bool checked);
+    void pushButtonD1ExportClickedSlot();
+    void pushButtonD1StartupClickedSlot(bool checked);
+
+private:
+    void initD1Config();
+    QStringList getD1ValidMacList();
+    bool checkD1MacSize();
+    void updataD1FirstMac();
+
+    unsigned int getMacCount(QString macFirst, QString macLast);
+
+    //flash mac address
+    void ETCSSetMac();
+    static DWORD WINAPI ThreadProcETCS(void* arg);
+    void ETCSTelnet(SOCKET sock);
+    bool ETCSWrite(SOCKET sock,const char *strWrite,int nWrite);
+
+    enum eRunState
+    {
+        STATE_NOT_RUN,
+        STATE_RUNING,
+        STATE_FINISH
+    };
+
+    QStringList  D1MacList;
+    int          D1ValidByte;
+    int          D1LowestValidByte;
+    QString      D1FirstMac;
+    QString      D1LastMac;
+    int          D1MacPCS;
+    eRunState    D1State;
+    int          D1MacIndex;
+    int          D1FlashError;
+    int          D1TimerID;
 };
 
 #endif // MAINWINDOW_H

@@ -1,7 +1,15 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
+#include <math.h>
 
 #pragma comment(lib, "ws2_32.lib" )
+
+#define ETCS_OK               0
+#define ETCS_SOCKET_CREATE    1
+#define ETCS_SOCKET_CON       2
+#define ETCS_SOCKET_RECV      3
+#define ETCS_SOCKET_SEND      4
+#define ETCS_RET_ERROR        5
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -51,6 +59,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->PushButtonX618Export->setEnabled(false);
     ui->PushButtonX618Startup->setEnabled(false);
 
+    //----------------------------------------------------
+    D1MacIndex = 0;
+    D1ValidByte = 0;
+    D1LowestValidByte = 0;
+    D1FirstMac = "";
+    D1LastMac = "";
+    D1MacPCS = 0;
+    D1State = STATE_NOT_RUN;
+    D1FlashError = 0;
+    ui->PushButtonD1Export->setEnabled(false);
+    ui->PushButtonD1Startup->setEnabled(false);
+
     //------------------------------------------------------------------------
     PrintStartup = false;
     PrintPrinter = new QPrinter();
@@ -83,6 +103,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //addGroup();
 
     initOtherConfig();
+    initD1Config();
     this->showMaximized();
 }
 
@@ -481,7 +502,7 @@ void MainWindow::pushButtonPreestablishClickedSlot(bool checked)
     if(checked == true)
     {
         MacPCS = ui->SpinBoxMacPCS->value();
-        if(checkMacSize() == false)
+        if(checkMacSize(MacPCS,FirstMac,LastMac,ValidByte,LowestValidByte) == false)
         {
             MacPCS = 0;
             ui->PushButtonPreestablish->setChecked(false);
@@ -507,7 +528,7 @@ void MainWindow::pushButtonExportClickedSlot()
         QFile File(FilePath);
         if(File.open(QIODevice::WriteOnly) == true)
         {
-            QStringList List = getValidMacList();
+            QStringList List = getValidMacList(FirstMac,MacPCS,ValidByte,LowestValidByte);
             for(int i=0;i<List.size();i++)
             {
                 File.write(List.at(i) + "\n");
@@ -521,29 +542,32 @@ void MainWindow::pushButtonExportClickedSlot()
     }
 }
 
-bool MainWindow::checkMacSize()
+bool MainWindow::checkMacSize(int iMacPCS,QString sFirstMac, QString sLastMac,
+                              int iValidByte,int iLowestValidByte)
 {
     unsigned int ValidFirstMac = 0;
     unsigned int ValidLastMac = 0;
-    bool Flag = getValidMac(FirstMac, &ValidFirstMac) && getValidMac(LastMac, &ValidLastMac);
-    unsigned int ValidMacCount = ValidFirstMac + MacPCS - 1;
-    if(ValidMacCount > (0xFFFFFFFF >> (4 - ValidByte)) || ValidMacCount > ValidLastMac)
+    bool Flag = getValidMac(sFirstMac, &ValidFirstMac,iValidByte,iLowestValidByte)
+            && getValidMac(sLastMac, &ValidLastMac,iValidByte,iLowestValidByte);
+    unsigned int ValidMacCount = ValidFirstMac + iMacPCS - 1;
+    if(ValidMacCount > (0xFFFFFFFF >> (4 - iValidByte)) || ValidMacCount > ValidLastMac)
     {
         Flag = false;
     }
     return Flag;
 }
 
-bool MainWindow::getValidMac(QString mac, unsigned int *validMac)
+bool MainWindow::getValidMac(QString mac, unsigned int *validMac,
+                             int iValidByte,int iLowestValidByte)
 {
     bool Flag = false;
     *validMac = 0;
-    QString ValidMac = mac.section(":", LowestValidByte - ValidByte + 1, LowestValidByte) + ":";
-    for(int i=ValidMac.count(":")-1,n=0;i>=0;i--,n++)
+    QString tValidMac = mac.section(":", iLowestValidByte - iValidByte + 1, iLowestValidByte) + ":";
+    for(int i=tValidMac.count(":")-1,n=0;i>=0;i--,n++)
     {
         Flag = true;
         bool Ok = false;
-        unsigned char Hex = ValidMac.section(":", i, i).toInt(&Ok, 16);
+        unsigned char Hex = tValidMac.section(":", i, i).toInt(&Ok, 16);
         if(false == Ok)
         {
             Flag = false;
@@ -554,26 +578,27 @@ bool MainWindow::getValidMac(QString mac, unsigned int *validMac)
     return Flag;
 }
 
-QStringList MainWindow::getValidMacList()
+QStringList MainWindow::getValidMacList(QString sFirstMac,int iMacPCS,
+                                        int iValidByte,int iLowestValidByte)
 {
     QStringList List;
     List.clear();
     unsigned int ValidFirstMac = 0;
-    getValidMac(FirstMac, &ValidFirstMac);
-    unsigned int ValidMacCount = ValidFirstMac + MacPCS - 1;
+    getValidMac(sFirstMac, &ValidFirstMac,iValidByte,iLowestValidByte);
+    unsigned int ValidMacCount = ValidFirstMac + iMacPCS - 1;
     for(unsigned int i=ValidFirstMac;i<=ValidMacCount;i++)
     {
         QString FirstPart = "";
-        if((LowestValidByte - ValidByte) >= 0)
+        if((iLowestValidByte - iValidByte) >= 0)
         {
-            FirstPart = FirstMac.section(":", 0, LowestValidByte - ValidByte) + ":";
+            FirstPart = sFirstMac.section(":", 0, iLowestValidByte - iValidByte) + ":";
         }
         QString MidPart = "";
-        for(int n=ValidByte-1;n>=0;n--)
+        for(int n=iValidByte-1;n>=0;n--)
         {
             MidPart += QString::number(((i >> (n * 8)) & 0x000000FF), 16) + ":";
         }
-        QString LastPart = FirstMac.section(":", LowestValidByte + 1);
+        QString LastPart = sFirstMac.section(":", iLowestValidByte + 1);
         QString Mac = QString("%1%2%3").arg(FirstPart).arg(MidPart).arg(LastPart);
         List<<RepairMac(Mac);
     }
@@ -608,7 +633,7 @@ void MainWindow::pushButtonStartupClickedSlot(bool checked)
             ui->PlainTextEdit->clear();
             TimerMacIndex = 0;
             Timer->start(1000);
-            QStringList List = getValidMacList();
+            QStringList List = getValidMacList(FirstMac,MacPCS,ValidByte,LowestValidByte);
             if(List.size() > 0)
             {
                 ui->PlainTextEdit->appendPlainText(QString("正在烧写第%1 PCS,所用Mac为%2.").
@@ -628,7 +653,7 @@ void MainWindow::pushButtonStartupClickedSlot(bool checked)
 void MainWindow::timerSlot()
 {
     bool Flag = false;
-    QStringList List = getValidMacList();
+    QStringList List = getValidMacList(FirstMac,MacPCS,ValidByte,LowestValidByte);
     if(TimerMacIndex >= 0 && TimerMacIndex < List.size())
     {
         QString Mac = List.at(TimerMacIndex);
@@ -866,7 +891,7 @@ void MainWindow::updataFirstMac()
     if(File.exists() && File.isFile())
     {
         unsigned int ValidFirstMac = 0;
-        getValidMac(FirstMac, &ValidFirstMac);
+        getValidMac(FirstMac, &ValidFirstMac,ValidByte,LowestValidByte);
         //unsigned int ValidMacCount = ValidFirstMac + MacPCS;
         unsigned int ValidMacCount = ValidFirstMac + TimerMacIndex;
         QString FirstPart = "";
@@ -927,6 +952,9 @@ void MainWindow::selectDevice(int type)
         ui->TabWidgetDevice->setCurrentIndex(1);
         ui->ComboBoxX618->setCurrentIndex(1);
         break;
+    case D_D1_ETCS:
+        ui->TabWidgetDevice->setCurrentIndex(2);
+        break;
     }
 }
 
@@ -971,6 +999,9 @@ int MainWindow::getDeviceType()
             break;
         }
         break;
+    case 2:
+        DeviceType = D_D1_ETCS;
+        break;
     default:
         break;
     }
@@ -993,6 +1024,14 @@ QString MainWindow::getDeviceTypeStr()
             break;
         }
         break;
+    case 2:
+        switch(ui->ComboBoxD1->currentIndex())
+        {
+        case 0:
+            DeviceType = "D1ETCS";
+            break;
+        }
+        break;
     default:
         break;
     }
@@ -1001,13 +1040,13 @@ QString MainWindow::getDeviceTypeStr()
 
 void MainWindow::pushButtonX618PreestablishClickedSlot(bool checked)
 {
+    X618MacPCS = 0;
     if(checked == true)
     {
         initX618Arg();
         X618MacPCS = ui->SpinBoxX618MacPCS->value();
-        if(checkX618MacSize() == false)
+        if(checkMacSize(X618MacPCS,X618FirstMac,X618LastMac,X618ValidByte,X618LowestValidByte) == false)
         {
-            X618MacPCS = 0;
             ui->PushButtonX618Preestablish->setChecked(false);
             QMessageBox::warning(this, "警告", "Mac地址空间不足!", "OK");
             return;
@@ -1104,63 +1143,9 @@ void MainWindow::initX618Arg()
     }
 }
 
-bool MainWindow::checkX618MacSize()
-{
-    unsigned int ValidFirstMac = 0;
-    unsigned int ValidLastMac = 0;
-    bool Flag = getX618ValidMac(X618FirstMac, &ValidFirstMac) && getX618ValidMac(X618LastMac, &ValidLastMac);
-    unsigned int ValidMacCount = ValidFirstMac + X618MacPCS - 1;
-    if(ValidMacCount > (0xFFFFFFFF >> (4 - X618ValidByte)) || ValidMacCount > ValidLastMac)
-    {
-        Flag = false;
-    }
-    return Flag;
-}
-
-bool MainWindow::getX618ValidMac(QString mac, unsigned int *validMac)
-{
-    bool Flag = false;
-    *validMac = 0;
-    QString ValidMac = mac.section(":", X618LowestValidByte - X618ValidByte + 1, X618LowestValidByte) + ":";
-    for(int i=ValidMac.count(":")-1,n=0;i>=0;i--,n++)
-    {
-        Flag = true;
-        bool Ok = false;
-        unsigned char Hex = ValidMac.section(":", i, i).toInt(&Ok, 16);
-        if(false == Ok)
-        {
-            Flag = false;
-            break;
-        }
-        *validMac += Hex << (n * 8);
-    }
-    return Flag;
-}
-
 QStringList MainWindow::getX618ValidMacList()
 {
-    QStringList List;
-    List.clear();
-    unsigned int ValidFirstMac = 0;
-    getValidMac(X618FirstMac, &ValidFirstMac);
-    unsigned int ValidMacCount = ValidFirstMac + X618MacPCS - 1;
-    for(unsigned int i=ValidFirstMac;i<=ValidMacCount;i++)
-    {
-        QString FirstPart = "";
-        if((X618LowestValidByte - X618ValidByte) >= 0)
-        {
-            FirstPart = X618FirstMac.section(":", 0, X618LowestValidByte - X618ValidByte) + ":";
-        }
-        QString MidPart = "";
-        for(int n=X618ValidByte-1;n>=0;n--)
-        {
-            MidPart += QString::number(((i >> (n * 8)) & 0x000000FF), 16) + ":";
-        }
-        QString LastPart = X618FirstMac.section(":", X618LowestValidByte + 1);
-        QString Mac = QString("%1%2%3").arg(FirstPart).arg(MidPart).arg(LastPart);
-        List<<RepairMac(Mac);
-    }
-    return List;
+    return getValidMacList(X618FirstMac,X618MacPCS,X618ValidByte,X618LowestValidByte);
 }
 
 void MainWindow::x618TimerSlot()
@@ -1179,7 +1164,7 @@ void MainWindow::x618TimerSlot()
         Data = queryX618NetworkArg();
         DeviceSize = getDeviceSizeForNetData(Data);
     }
-    QStringList List = getX618ValidMacList();
+    QStringList List = getValidMacList(X618FirstMac,X618MacPCS,X618ValidByte,X618LowestValidByte);
     switch(DeviceSize)
     {
     case 0:
@@ -1589,7 +1574,7 @@ void MainWindow::updataX618FirstMac()
     if(File.exists() && File.isFile())
     {
         unsigned int ValidFirstMac = 0;
-        getX618ValidMac(X618FirstMac, &ValidFirstMac);
+        getValidMac(X618FirstMac, &ValidFirstMac,X618ValidByte,X618LowestValidByte);
         //unsigned int ValidMacCount = ValidFirstMac + MacPCS;
         unsigned int ValidMacCount = ValidFirstMac + X618TimerMacIndex;
         QString FirstPart = "";
@@ -1798,5 +1783,385 @@ void MainWindow::printMac(QString mac)
             Painter.setFont(PrintFont);
             Painter.drawText(PrintLeft, PrintTop + Painter.fontMetrics().height(), mac);
         }
+    }
+}
+
+void MainWindow::initD1Config()
+{
+    connect(ui->PushButtonD1Preestablish, SIGNAL(clicked(bool)),
+            this, SLOT(pushButtonD1PreestablishClickedSlot(bool)));
+    connect(ui->PushButtonD1Export, SIGNAL(clicked()),
+            this, SLOT(pushButtonD1ExportClickedSlot()));
+    connect(ui->PushButtonD1Startup, SIGNAL(clicked(bool)),
+            this, SLOT(pushButtonD1StartupClickedSlot(bool)));
+
+    D1TimerID = this->startTimer(1000);
+
+    QString Path = "./MacProgrammer.ini";
+    QFileInfo File(Path);
+    if(File.exists() && File.isFile())
+    {
+        QSettings Setting(Path, QSettings::IniFormat);
+
+        D1ValidByte = Setting.value("T_D1/T_ValidByte", 0).toInt();
+        D1LowestValidByte = Setting.value("T_D1/T_LowestValidByte", 0).toInt() - 1;
+        D1FirstMac = Setting.value("T_D1/T_FirstMac", "").toString() + ":";
+        D1LastMac = Setting.value("T_D1/T_LastMac", "").toString() + ":";
+
+        int DeviceType = Setting.value("T_General/T_DeviceType", 0).toInt();
+        selectDevice(DeviceType);
+    }
+}
+
+void MainWindow::pushButtonD1PreestablishClickedSlot(bool checked)
+{
+    QString Path = "./MacProgrammer.ini";
+    QFileInfo File(Path);
+    if(File.exists() && File.isFile())
+    {
+        QSettings Setting(Path, QSettings::IniFormat);
+        D1FirstMac = Setting.value("T_D1/T_FirstMac", "").toString() + ":";
+    }
+
+    D1MacPCS = 0;
+    if(checked == true)
+    {
+        D1MacPCS = ui->SpinBoxD1MacPCS->value();
+        if(checkMacSize(D1MacPCS,D1FirstMac,D1LastMac,D1ValidByte,D1LowestValidByte) == false)
+        {
+            ui->PushButtonD1Preestablish->setChecked(false);
+            QMessageBox::warning(this, "警告", "Mac地址空间不足!", "OK");
+            return;
+        }
+        else
+        {
+            ui->PlainTextD1Edit->appendPlainText("===========预设成功=========");
+            ui->PlainTextD1Edit->appendPlainText(" ");
+        }
+    }
+    else
+    {
+        D1MacPCS = 0;
+    }
+    ui->GroupBoxD1Step->setTitle(QString("进度 0/%1").arg(X618MacPCS));
+    ui->PushButtonD1Export->setEnabled(checked);
+    ui->PushButtonD1Startup->setEnabled(checked);
+    ui->SpinBoxD1MacPCS->setEnabled(!checked);
+}
+
+void MainWindow::pushButtonD1ExportClickedSlot()
+{
+    QString FilePath = QFileDialog::getSaveFileName(this, "导出", "./", "文本文档 (*.txt)");
+    if(FilePath.isEmpty() == false)
+    {
+        QFile File(FilePath);
+        if(File.open(QIODevice::WriteOnly) == true)
+        {
+            QStringList List = getValidMacList(D1FirstMac,D1MacPCS,
+                                               D1ValidByte,D1LowestValidByte);
+            for(int i=0;i<List.size();i++)
+            {
+                File.write(List.at(i) + "\n");
+            }
+            File.close();
+        }
+        else
+        {
+            QMessageBox::warning(this, "警告", "导出文档失败!", "OK");
+        }
+    }
+}
+
+void MainWindow::pushButtonD1StartupClickedSlot(bool checked)
+{
+    if(checked == true && D1State == STATE_NOT_RUN)
+    {
+        D1MacIndex = 0;
+        D1MacList.clear();
+        D1MacList = getValidMacList(D1FirstMac,D1MacPCS,D1ValidByte,D1LowestValidByte);
+        if(D1MacList.size() > 0)
+        {
+            ETCSSetMac();
+        }
+    }
+}
+
+void MainWindow::ETCSSetMac()
+{
+    D1State = STATE_RUNING;
+    ui->PlainTextD1Edit->appendPlainText(QString("正在烧写第%1 PCS,所用Mac为%2.").
+                                       arg(D1MacIndex + 1).arg(D1MacList.at(D1MacIndex)));
+
+    HANDLE hThread = ::CreateThread(NULL, 0, MainWindow::ThreadProcETCS,this, 0, NULL);
+    CloseHandle(hThread);
+}
+
+QStringList MainWindow::getD1ValidMacList()
+{
+    return getValidMacList(D1FirstMac,D1MacPCS,D1ValidByte,D1LowestValidByte);
+}
+
+DWORD WINAPI MainWindow::ThreadProcETCS(void* arg)
+{
+    MainWindow* pThis = (MainWindow*)arg;
+
+    //create
+    SOCKET sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (sock != INVALID_SOCKET)
+    {
+        struct sockaddr_in svraddr;
+        svraddr.sin_family = AF_INET;
+        svraddr.sin_addr.s_addr = inet_addr("192.168.1.127");
+        svraddr.sin_port = htons(23);
+        int ret = ::connect(sock, (struct sockaddr *)&svraddr, sizeof(svraddr));
+        if(ret != SOCKET_ERROR)
+        {
+            pThis->ETCSTelnet(sock);
+        }
+        else
+        {
+            pThis->D1FlashError = ETCS_SOCKET_CON;
+        }
+    }
+    else
+    {
+        pThis->D1FlashError = ETCS_SOCKET_CREATE;
+    }
+    closesocket(sock);
+    pThis->D1State = STATE_FINISH;
+    return 0;
+}
+
+void MainWindow::ETCSTelnet(SOCKET sock)
+{
+    //telnet client
+    std::string strBuf;
+    bool bSendCmd = false;
+
+    while (true)
+    {
+        char data = 0;
+        if (recv(sock, &data, 1, 0) != 1)
+        {
+            D1FlashError = ETCS_SOCKET_RECV;
+            break;
+        }
+        strBuf.push_back(data);
+
+        //first login
+        size_t pos = strBuf.find("Logon:");
+        if(pos != std::string::npos)
+        {
+            std::string str = "etcs\r\n";
+            if(!ETCSWrite(sock,str.c_str(), str.length()))
+            {
+                D1FlashError = ETCS_SOCKET_SEND;
+                break;
+            }
+            strBuf.clear();
+            continue;
+        }
+        if (data != '>')
+        {
+            continue;
+        }
+        //first send command
+        if (!bSendCmd)
+        {
+            bSendCmd = true;
+            std::string strSend = std::string("setmac ")
+                    + D1MacList.at(D1MacIndex).toStdString() + std::string("\r\n");
+            if(!ETCSWrite(sock,strSend.c_str(), strSend.length()))
+            {
+                D1FlashError = ETCS_SOCKET_SEND;
+                break;
+            }
+            strBuf.clear();
+            continue;
+        }
+
+        //get the result
+        pos = strBuf.rfind('\n');
+        if(pos != std::string::npos)
+        {
+            strBuf = strBuf.substr(0,pos);
+        }
+        //reselt
+        pos = strBuf.find("OK");
+        if(pos != std::string::npos)
+        {
+            D1FlashError = ETCS_OK;
+        }
+        else
+        {
+            D1FlashError = ETCS_RET_ERROR;
+        }
+        break;
+    }
+}
+
+bool MainWindow::ETCSWrite(SOCKET sock,const char *strWrite,int nWrite)
+{
+    int write = 0;
+    while ( write < nWrite )
+    {
+        if (sock == INVALID_SOCKET)
+            return false;
+
+        int left = nWrite - write;
+        int iWrite = send(sock, strWrite + write, left, 0);
+
+        if (iWrite <= 0 )
+        {
+            return false;
+        }
+        write += iWrite;
+    }
+    return write == nWrite;
+}
+
+void MainWindow::timerEvent( QTimerEvent *event)
+{
+    if(D1State != STATE_FINISH)
+    {
+        return;
+    }
+
+    D1State = STATE_NOT_RUN;
+    QMessageBox MsgBox;
+    MsgBox.setWindowIcon(QIcon(":/Resource/Title.png"));
+
+    if(D1FlashError == 0)
+    {
+        ui->GroupBoxD1Step->setTitle(QString("进度 %1/%2").arg(D1MacIndex+1).arg(D1MacPCS));
+        QFile File("./" + QDate::currentDate().toString("yyyy") + ".log");
+        QString TypeStr = getDeviceTypeStr();
+        if(File.open(QIODevice::Append) == true)
+        {
+            File.write(QString("[%1]     %2     %3\n").
+                       arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")).
+                       arg(TypeStr).
+                       arg(D1MacList.at(D1MacIndex).section(":", 0, 5)));
+            File.close();
+        }
+        printMac(D1MacList.at(D1MacIndex).section(":", 0, 5));
+
+        MsgBox.setStandardButtons(QMessageBox::Abort | QMessageBox::Ok);
+        MsgBox.setWindowTitle("信息");
+        MsgBox.setText("设备烧写Mac成功.\n请查设备Mac,再次确认Mac是否一致.\n单击[OK],更新下一台设备。");
+        ui->PlainTextD1Edit->appendPlainText("设备烧写Mac成功.");
+        ui->PlainTextD1Edit->appendPlainText(" ");
+        MsgBox.setIcon(QMessageBox::Information);
+
+        //if all flash finished
+        if((D1MacIndex+1) >= D1MacList.size())
+        {
+            updataD1FirstMac();
+            ui->PushButtonD1Startup->setChecked(false);
+            ui->PushButtonD1Preestablish->setChecked(false);
+            pushButtonD1PreestablishClickedSlot(false);
+
+            MsgBox.setStandardButtons(QMessageBox::Ok);
+            MsgBox.setText("全部烧写完成。");
+            MsgBox.exec();
+            return;
+        }
+    }
+    else
+    {
+        MsgBox.setStandardButtons(QMessageBox::Abort | QMessageBox::Retry);
+        MsgBox.setWindowTitle("警告");
+        MsgBox.setIcon(QMessageBox::Warning);
+
+        if(D1FlashError == ETCS_SOCKET_CREATE)
+        {
+            MsgBox.setText("Socket创建失败，请查看.");
+            ui->PlainTextD1Edit->appendPlainText("Socket创建失败,请查看.");
+        }
+        else if(D1FlashError == ETCS_SOCKET_CON)
+        {
+            MsgBox.setText("连接到设备失败，请查看.");
+            ui->PlainTextD1Edit->appendPlainText("连接到设备失败,请查看.");
+        }
+        else if(D1FlashError == ETCS_SOCKET_RECV)
+        {
+            MsgBox.setText("数据接收错误，请查看.");
+            ui->PlainTextD1Edit->appendPlainText("数据接收错误,请查看.");
+        }
+        else if(D1FlashError == ETCS_SOCKET_SEND)
+        {
+            MsgBox.setText("数据发送错误，请查看.");
+            ui->PlainTextD1Edit->appendPlainText("数据发送错误,请查看.");
+        }
+        else if(D1FlashError == ETCS_RET_ERROR)
+        {
+            MsgBox.setText("MAC地址设置失败，请查看.");
+            ui->PlainTextD1Edit->appendPlainText("MAC地址设置失败，请查看.");
+        }
+        else
+        {
+            MsgBox.setText("未知错误，请查看.");
+            ui->PlainTextD1Edit->appendPlainText("未知错误，请查看.");
+        }
+    }
+    switch (MsgBox.exec())
+    {
+    case QMessageBox::Ok:
+    {
+        updataD1FirstMac();
+
+        if((D1MacIndex+1) >= D1MacPCS)
+        {
+            ui->PushButtonD1Startup->setChecked(false);
+            ui->PushButtonD1Preestablish->setChecked(false);
+            pushButtonD1PreestablishClickedSlot(false);
+            return;
+        }
+        D1MacIndex++;
+        ETCSSetMac();
+        break;
+    }
+    case QMessageBox::Retry:
+    {
+        ETCSSetMac();
+        break;
+    }
+    default:
+    {
+        if(D1FlashError == 0 && D1MacIndex < D1MacList.size())
+        {
+            updataD1FirstMac();
+            D1MacIndex = 0;
+        }
+        ui->PushButtonD1Startup->setChecked(false);
+        ui->PushButtonD1Preestablish->setChecked(false);
+        pushButtonD1PreestablishClickedSlot(false);
+    }
+    }  //switch
+}
+
+void MainWindow::updataD1FirstMac()
+{
+    QString Path = "./MacProgrammer.ini";
+    QFileInfo File(Path);
+    if(File.exists() && File.isFile())
+    {
+        unsigned int ValidFirstMac = 0;
+        getValidMac(D1FirstMac, &ValidFirstMac,D1ValidByte,D1LowestValidByte);
+        unsigned int ValidMacCount = ValidFirstMac + D1MacIndex + 1;
+        QString FirstPart = "";
+        if((D1LowestValidByte - D1ValidByte) >= 0)
+        {
+            FirstPart = D1FirstMac.section(":", 0, D1LowestValidByte - D1ValidByte) + ":";
+        }
+        QString MidPart = "";
+        for(int n=D1ValidByte-1;n>=0;n--)
+        {
+            MidPart += QString::number(((ValidMacCount >> (n * 8)) & 0x000000FF), 16) + ":";
+        }
+        QString LastPart = D1FirstMac.section(":", D1LowestValidByte + 1);
+        QString Mac = QString("%1%2%3").arg(FirstPart).arg(MidPart).arg(LastPart);
+        QSettings Setting(Path, QSettings::IniFormat);
+        Setting.setValue("T_D1/T_FirstMac", RepairMac(Mac));
     }
 }
