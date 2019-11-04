@@ -8,8 +8,8 @@
 		<rack name="rack2" id="2" type="Upright cabinet with hinged frame 40 HU" height_unit="40HU" description="desc"/>
 	</racks>
 	<devices>
-		<device id="236" name="DOM 1" IP="192.168.1.236" type="DOM II" rack_id="1" rack_layer="1" description=""/>
-		<device id="237" name="DOM 2" IP="192.168.1.237" type="DOM II" rack_id="2" rack_layer="1" description=""/>
+		<device id="236" name="DOM 1" IP="192.168.1.236" type="DOM II" rack_id="1" rack_layer="1" description="236"/>
+		<device id="237" name="DOM 2" IP="192.168.1.237" type="DOM II" rack_id="2" rack_layer="1" description="237"/>
 	</devices>
 	<buildings>
 		<building id="1" name="building1"/>
