@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system_entities>
+	<site>
+		<general name="Test project" reference_number="123456" type="PAVA"/>
+	</site>
+	<racks>
+		<rack name="rack1" id="1" type="Upright cabinet with hinged frame 24 HU" height_unit="24HU" description="desc"/>
+		<rack name="rack2" id="2" type="Upright cabinet with hinged frame 40 HU" height_unit="40HU" description="desc"/>
+	</racks>
+	<devices>
+		<device id="236" name="DOM 1" IP="192.168.1.236" type="DOM II" rack_id="1" rack_layer="1" description=""/>
+		<device id="237" name="DOM 2" IP="192.168.1.237" type="DOM II" rack_id="2" rack_layer="1" description=""/>
+	</devices>
+	<buildings>
+		<building id="1" name="building1"/>
+		<building id="2" name="building2"/>
+	</buildings>
+	<areas>
+		<area id="1" building_id="1" name="building1.floot1"/>
+		<area id="2" building_id="1" name="building1.floot2"/>
+		<area id="3" building_id="2" name="building2.floot1"/>
+		<area id="4" building_id="2" name="building2.floot2,floot3"/>
+	</areas>
+	<zones>
+		<zone id="1" name="Door 1" output_list="AO_237_10_0,AO_237_41_0,AO_236_250_1" area_id="1" description="desc"/>
+		<zone id="2" name="Door 2" output_list="AO_237_10_1,AO_237_41_0" area_id="3" description="desc"/>
+	</zones>
+	<users>
+		<user id="1" name="admin" password="8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92" group="root"/>
+	</users>
+	<sip>
+		<sip_server IP="192.168.1.223" port="5060" outbound_proxy_server="" stun_server=""/>
+		<remote_sip_accounts>
+			<remote_sip_account username="1002" IP="192.168.1.223"/>
+		</remote_sip_accounts>
+	</sip>
+	<about description="desc" configuration_version="" last_modified="" schema_version="0.0.0-T004" />
+</system_entities>

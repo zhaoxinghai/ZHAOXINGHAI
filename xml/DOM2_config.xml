@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<device_config>
+		<properties>
+			<general name="DOM 2" device_id="237" type="DOM II" IP="192.168.1.237" />
+			<monitoring power_amplifier="true" earth_fault_detection="true" impedance_measurement="true" main_power="true" backup_power="true"/>
+			<!--network: false => does not report the error to the other device;
+						true => send the error to other device
+				reset_state: How to reset the error,Automatic or Manual
+				sound: Whether it is necessary to play sounds to notify the error
+				AMFNSD: Accept messages from non-subscribed DOMs
+				IEFNSD: Indicate errors from non-subscrbed DOMs
+			-->
+			<error_handling network="true" reset_state="true" sound="true" AMFNSD="true" IEFNSD="true" />
+		</properties>
+		<amplifiers>
+			<amplifier id="1" name="AMP 4XD250B" type="AMP 4XD250B"/>
+			<amplifier id="2" name="AMP 4XD125B" type="AMP 4XD125B"/>
+		</amplifiers>
+		<PA_channels>
+			<PA_channel id="1" amplifier_id="1" amplifier_channel="1" monitoring="true" amplification="42.2" is_backup_channel="true" backup_device_id="237" backup_speaker_circuit="25"/>
+			<PA_channel id="2" amplifier_id="1" amplifier_channel="2" monitoring="true" amplification="42.2" is_backup_channel="false" backup_device_id="" backup_speaker_circuit=""/>
+			<PA_channel id="4" amplifier_id="2" amplifier_channel="1" monitoring="true" amplification="42.2" is_backup_channel="false" backup_device_id="" backup_speaker_circuit=""/>
+		</PA_channels>
+		<speaker_circuits>
+			<speaker_circuit id="1" name="1-1" module="1" line="1" power="50" monitoring="true" QTY_speaker="5" earth_fault_detection="true" accurate_earth_fault_detection="false" threshold_earth_fault="50000" line_monitoring="true" monitoring_type="impedance measurement" monitoring_mode="default" tolerance="10" statistic_average_tracing="false" threshold_short_circuit="8" threshold_open_line="20000">
+				<working_impedance_measurement pilot_power_selection="0" frequency="23" level_1="8" level_2="16" level_3="22" level_4="28" frequency_EOL="22000" level_EOL="0" offset_EOL="0.05"/>
+				<idle_impedance_measurement frequency_1="70" level_1="-3.5" frequency_2="250" level_2="-39" frequency_3="1000" level_3="-53" frequency_EOL="22000" level_EOL="-3.5" offset_EOL="0.4"/>
+			</speaker_circuit>
+			<speaker_circuit id="2" name="1-2" module="1" line="2" power="50" monitoring="true" QTY_speaker="5" earth_fault_detection="true" accurate_earth_fault_detection="false" threshold_earth_fault="50000" line_monitoring="true" monitoring_type="impedance measurement" monitoring_mode="default" tolerance="10" statistic_average_tracing="false" threshold_short_circuit="8" threshold_open_line="20000">
+				<working_impedance_measurement pilot_power_selection="0" frequency="23" level_1="8" level_2="16" level_3="22" level_4="28" frequency_EOL="22000" level_EOL="0" offset_EOL="0.05"/>
+				<idle_impedance_measurement frequency_1="70" level_1="-3.5" frequency_2="250" level_2="-39" frequency_3="1000" level_3="-53" frequency_EOL="22000" level_EOL="-3.5" offset_EOL="0.4"/>
+			</speaker_circuit>
+			<speaker_circuit id="9" name="2-1" module="2" line="1" power="50" monitoring="true" QTY_speaker="5" earth_fault_detection="true" accurate_earth_fault_detection="false" threshold_earth_fault="50000" line_monitoring="true" monitoring_type="impedance measurement" monitoring_mode="default" tolerance="10" statistic_average_tracing="false" threshold_short_circuit="8" threshold_open_line="20000">
+				<working_impedance_measurement pilot_power_selection="0" frequency="23" level_1="8" level_2="16" level_3="22" level_4="28" frequency_EOL="22000" level_EOL="0" offset_EOL="0.05"/>
+				<idle_impedance_measurement frequency_1="70" level_1="-3.5" frequency_2="250" level_2="-39" frequency_3="1000" level_3="-53" frequency_EOL="22000" level_EOL="-3.5" offset_EOL="0.4"/>
+			</speaker_circuit>
+			<speaker_circuit id="10" name="2-2" module="2" line="2" power="50" monitoring="true" QTY_speaker="5" earth_fault_detection="true" accurate_earth_fault_detection="false" threshold_earth_fault="50000" line_monitoring="true" monitoring_type="impedance measurement" monitoring_mode="default" tolerance="10" statistic_average_tracing="false" threshold_short_circuit="8" threshold_open_line="20000">
+				<working_impedance_measurement pilot_power_selection="0" frequency="23" level_1="8" level_2="16" level_3="22" level_4="28" frequency_EOL="22000" level_EOL="0" offset_EOL="0.05"/>
+				<idle_impedance_measurement frequency_1="70" level_1="-3.5" frequency_2="250" level_2="-39" frequency_3="1000" level_3="-53" frequency_EOL="22000" level_EOL="-3.5" offset_EOL="0.4"/>
+			</speaker_circuit>
+			<speaker_circuit id="25" name="4-1" module="4" line="1" power="50" monitoring="true" QTY_speaker="5" earth_fault_detection="true" accurate_earth_fault_detection="false" threshold_earth_fault="50000" line_monitoring="true" monitoring_type="impedance measurement" monitoring_mode="default" tolerance="10" statistic_average_tracing="false" threshold_short_circuit="8" threshold_open_line="20000">
+				<working_impedance_measurement pilot_power_selection="0" frequency="23" level_1="8" level_2="16" level_3="22" level_4="28" frequency_EOL="22000" level_EOL="0" offset_EOL="0.05"/>
+				<idle_impedance_measurement frequency_1="70" level_1="-3.5" frequency_2="250" level_2="-39" frequency_3="1000" level_3="-53" frequency_EOL="22000" level_EOL="-3.5" offset_EOL="0.4"/>
+			</speaker_circuit>
+		</speaker_circuits>
+		<loops>
+			<loop id="1" circuit_id_list="1,9" mode="" isolators_power="2" QTY_isolators="2" start_mode="simple" communication_low_voltage="10000" communication_high_voltage="70000" relay_closing_impulse_voltage="26500" fast_boot_voltage="65000" fast_boot_powerup_time="3500" initial_relay_closing_impulse_voltage="75000" UPS_max_down_time="60000" UPS_boost_time="3000" loop_supply_voltage="31000" impedance_tolerance="10"/>
+		</loops>
+		<relay_matrices>
+			<relay_matrix id="1" PA_channel="1" link_PA_channel="3,5,7" speaker_circuit="1,2,9,10"/>
+			<relay_matrix id="2" PA_channel="2" link_PA_channel="3" speaker_circuit="10"/>
+			<relay_matrix id="3" PA_channel="4" link_PA_channel="5" speaker_circuit="25"/>
+		</relay_matrices>
+		<extern_module type="DAL+AVC+GPIO">
+			<DALs>
+				<DAL id="1" name="dal1" type="DCS plus" QTY_DKM="1" DKM_type="DKM18_RE" DAL_monitoring="true">
+					<DCS_properties MIC_monitoring="true" key_lock_number="0"/>
+				</DAL>
+				<DAL id="2" name="dal2" type="UIM" QTY_DKM="0" DKM_type="" DAL_monitoring="true">
+					<UIM_properties UIM_version="2"/>
+				</DAL>
+			</DALs>
+			<AVCs>
+				<AVC id="1" name="avc1" PA_channels="1,2" QTY_sensor="2"/>
+				<AVC id="2" name="avc2" PA_channels="4" QTY_sensor="3"/>
+			</AVCs>
+			<GPIOs>
+				<GPIO id="5" name="gpio1" type="input" monitoring_status="false" />
+				<GPIO id="6" name="gpio2" type="output" monitoring_status="true" />
+			</GPIOs>
+			<DANTE>
+			</DANTE>
+			<AUXs>
+			</AUXs>
+		</extern_module>
+		<audio_setting>
+			<playlist volume="0" max="12" min="-80"/>
+			<signal_generator volume="0" max="12" min="-80"/>
+			<PA_audio_settings>
+				<PA_audio_setting id="1" delay="0">
+					<volume value="0" max="12" min="-80" alarm_volume="0" />
+					<lowpass cut_off_frequency="16000" type="butterworth" order="2" active="0"/>
+					<highpass cut_off_frequency="100" type="butterworth" order="2" active="0"/>
+					<parametric_equalizer>
+						<equalizer_band id="1" active="0" frequency="60" Q="2" gain="0" />
+						<equalizer_band id="2" active="0" frequency="250" Q="2" gain="0" />
+						<equalizer_band id="3" active="0" frequency="500" Q="2" gain="0" />
+						<equalizer_band id="4" active="0" frequency="1000" Q="2" gain="0" />
+						<equalizer_band id="5" active="0" frequency="4000" Q="2" gain="0" />
+						<equalizer_band id="6" active="0" frequency="8000" Q="2" gain="0" />
+						<equalizer_band id="7" active="0" frequency="16000" Q="2" gain="0" />
+					</parametric_equalizer>
+					<DRC active="0" type="compressor" ratio="10" threshold="0" soft_knee="0" knee_width="0" attack_time="0.1" release_time="2000" />
+				</PA_audio_setting>
+			</PA_audio_settings>
+			<DAL_audio_setting>
+				<!--TODO -->
+			</DAL_audio_setting>
+			<AUX_audio_setting>
+				<!--TODO -->
+			</AUX_audio_setting>
+		</audio_setting>
+		<message_groups>
+			<message_group id="1" name="" master_device_id="237" sub_device_id_list="236,233,223"/>
+		</message_groups>
+		<local_sip_accounts>
+			<local_sip_account username="1000" password="123456"/>
+			<local_sip_account username="1001" password="123456"/>
+		</local_sip_accounts>
+	</device_config>
+	<operation>
+		<triggers>
+			<!--cne: cause and effect -->
+			<!-- 
+				I_237_1: I(contact input), 237(device id), 1(contact input number);
+				PG_1 : PG(action of paging), 1(action id);
+				VOL_1 : VOL(action of volume_ctrl), 1(action id);
+				DO_1 : DO(action of direct_output), 1(action id);
+			-->
+			<cnes>
+				<cne id="1" name="cnes1" equation="AND(I_237_1,I_237_2)" action_list="PG_1,PG_2"/>
+				<cne id="2" name="cnes2" equation="DELAY(00:00:20,00:00:00,OR(I_237_1,I_237_2))" action_list="VOL_1,DO_1"/>
+			</cnes>
+			<schedules>
+				<schedule id="1" start_date="2019_09_22" occurrence_time="14:30" repeat_type="1" end_repeat="2019_12_30" action_list="PG_2">
+					<daily every_n_days="7"/>
+					<weekly every_n_weeks="2" days_of_week="7,1"/>
+					<monthly every_n_months="1" occurrence_index="2" occurrence_type="13"/>
+					<yearly every_n_years="1" occurrence_month="2" occurrence_index="15" occurrence_type="11"/>
+				</schedule>
+			</schedules>
+			<contacts>
+				<contact id="1" name="contact1" action_list="VOL_1"/>
+				<contact id="2" name="contact2" action_list="VOL_2"/>
+			</contacts>
+			<vritual_contacts>
+				<vritual_contact id="1" name="vcontact1" action_list="PG_1"/>
+				<vritual_contact id="2" name="vcontact2" action_list="PG_2"/>
+			</vritual_contacts>
+		</triggers>
+		<actions>
+			<pagings>
+				<paging id="1" name="paging 1" sources="AI_237_41_0" presignal="AI_237_31_1" end_signal="AI_237_31_2" targets="Z_1,Z_2,O_237_1" volume="0" priority="250" loops="1" trigger_mode="toggle" paging_time="0" is_inverted="false" is_log="false" is_partial_connection="false" is_regain_connection="false" is_preset="false" is_AVC="false"/>
+				<paging id="2" name="paging 2" sources="AI_237_10_1" presignal="AI_237_31_1" end_signal="AI_237_31_2" targets="Z_1,Z_2,O_237_1" volume="0" priority="250" loops="1" trigger_mode="toggle" paging_time="0" is_inverted="false" is_log="false" is_partial_connection="false" is_regain_connection="false" is_preset="false" is_AVC="false"/>
+			</pagings>
+			<volume_ctrls>
+				<volume_ctrl id="1" targets="PA 1.1,PR 1.1" volue_step="1"/>
+				<volume_ctrl id="2" targets="PA 1.1,PR 1.1" volue_step="-1"/>
+			</volume_ctrls>
+			<direct_outputs>
+				<direct_output id="1" targets="O_237_1,O_237_2"/>
+			</direct_outputs>
+			<preselections>
+				<preselection id="1" targets="Z_1,O_237_3" trigger_mode="toggle"/>
+				<preselection id="2" targets="Z_2,O_237_4" trigger_mode="toggle"/>
+			</preselections>
+		</actions>
+	</operation>
+	<about description="" configuration_version="" last_modified="" schema_version="0.0.0-T004" />
+
+</configuration>
