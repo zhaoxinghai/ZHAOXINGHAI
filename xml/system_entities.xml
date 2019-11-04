@@ -34,5 +34,5 @@
 			<remote_sip_account username="1002" IP="192.168.1.223"/>
 		</remote_sip_accounts>
 	</sip>
-	<about description="desc" configuration_version="" last_modified="" schema_version="0.0.0-T004" />
+	<about description="desc" configuration_version=" " last_modified=" " schema_version="0.0.0-T004" />
 </system_entities>
