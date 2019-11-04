@@ -6,9 +6,9 @@
 		<audio_file id="3" device_id="237" path="./VA_audio/VA test.adp" check_type="md5" check_code="md5" monitoring="true" description="this is a VA sample audio"/>
 	</audio_files>
 	
-	<playlilsts>
-		<playlilst id="1" name="test audio" device_id="237" audio_file_id_list="F_1,P_10,F_2" channel="10" title="1" description="desc"/>
-		<playlilst id="2" name="VA audio" device_id="237" audio_file_id_list="F_3" channel="250" title="1" description="desc"/>
-	</playlilsts>
+	<playlists>
+		<playlist id="1" name="test audio" device_id="237" audio_file_id_list="F_1,P_10,F_2" channel="10" title="1" description="desc"/>
+		<playlist id="2" name="VA audio" device_id="237" audio_file_id_list="F_3" channel="250" title="1" description="desc"/>
+	</playlists>
 	<about description="desc" configuration_version="" last_modified="" schema_version="0.0.0-T004" />
 </audio_database>
