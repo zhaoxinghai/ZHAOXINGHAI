@@ -45,7 +45,7 @@
 			</speaker_circuit>
 		</speaker_circuits>
 		<loops>
-			<loop id="1" circuit_id_list="1,9" mode="" isolators_power="2" QTY_isolators="2" start_mode="simple" communication_low_voltage="10000" communication_high_voltage="70000" relay_closing_impulse_voltage="26500" fast_boot_voltage="65000" fast_boot_powerup_time="3500" initial_relay_closing_impulse_voltage="75000" UPS_max_down_time="60000" UPS_boost_time="3000" loop_supply_voltage="31000" impedance_tolerance="10"/>
+			<loop id="1" circuit_id_list="1,9" mode=" " isolators_power="2" QTY_isolators="2" start_mode="simple" communication_low_voltage="10000" communication_high_voltage="70000" relay_closing_impulse_voltage="26500" fast_boot_voltage="65000" fast_boot_powerup_time="3500" initial_relay_closing_impulse_voltage="75000" UPS_max_down_time="60000" UPS_boost_time="3000" loop_supply_voltage="31000" impedance_tolerance="10"/>
 		</loops>
 		<relay_matrices>
 			<relay_matrix id="1" PA_channel="1" link_PA_channel="3,5,7" speaker_circuit="1,2,9,10"/>
@@ -57,7 +57,7 @@
 				<DAL id="1" name="dal1" type="DCS plus" QTY_DKM="1" DKM_type="DKM18_RE" DAL_monitoring="true">
 					<DCS_properties MIC_monitoring="true" key_lock_number="0"/>
 				</DAL>
-				<DAL id="2" name="dal2" type="UIM" QTY_DKM="0" DKM_type=" " DAL_monitoring="true">
+				<DAL id="2" name="dal2" type="UIM" QTY_DKM="0" DAL_monitoring="true">
 					<UIM_properties UIM_version="2"/>
 				</DAL>
 			</DALs>
