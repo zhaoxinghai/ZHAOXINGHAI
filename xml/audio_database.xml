@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <audio_database>
 	<audio_files>
-		<audio_file id="1" device_id="237" path="./adp/1 chime gong.adp" check_type="md5" check_code="md5" monitoring="false" description="this is default pre signal"/>
-		<audio_file id="2" device_id="237" path="./audio/test 1.adp" check_type="md5" check_code="md5" monitoring="false" description="this is a sample audio"/>
-		<audio_file id="3" device_id="237" path="./VA_audio/VA test.adp" check_type="md5" check_code="md5" monitoring="true" description="this is a VA sample audio"/>
+		<audio_file id="1" device_id="237" path="./adp/1 chime gong.adp" check_type="" check_code="" monitoring="false" description="this is default pre signal"/>
+		<audio_file id="2" device_id="237" path="./audio/test 1.adp" check_type="" check_code="" monitoring="false" description="this is a sample audio"/>
+		<audio_file id="3" device_id="237" path="./VA_audio/VA test.adp" check_type="" check_code="" monitoring="true" description="this is a VA sample audio"/>
 	</audio_files>
 	
-	<playlists>
-		<playlist id="1" name="test audio" device_id="237" audio_file_id_list="F_1,P_10,F_2" channel="10" title="1" description="desc"/>
-		<playlist id="2" name="VA audio" device_id="237" audio_file_id_list="F_3" channel="250" title="1" description="desc"/>
-	</playlists>
-	<about description="desc" configuration_version=" " last_modified=" " schema_version="0.0.0-T004" />
+	<playlilsts>
+		<playlilst id="1" name="test audio" type="Audio" device_id="237" audio_file_id_list="F_1,P_10,F_2" channel="40" title="1" description=""/>
+		<playlilst id="2" name="VA audio" type="Audio" device_id="237" audio_file_id_list="F_3" channel="250" title="1" description=""/>
+	</playlilsts>
+	<about description="" configuration_version="" last_modified="" schema_version="0.0.0-T004" />
 </audio_database>
