@@ -102,7 +102,7 @@
 			</AUX_audio_setting>
 		</audio_setting>
 		<message_groups>
-			<message_group id="1" name="" master_device_id="237" sub_device_id_list="236,233,223"/>
+			<message_group id="1" name="1" master_device_id="237" sub_device_id_list="236,233,223"/>
 		</message_groups>
 		<local_sip_accounts>
 			<local_sip_account username="1000" password="123456"/>
