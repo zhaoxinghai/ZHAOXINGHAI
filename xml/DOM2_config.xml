@@ -57,7 +57,7 @@
 				<DAL id="1" name="dal1" type="DCS plus" QTY_DKM="1" DKM_type="DKM18_RE" DAL_monitoring="true">
 					<DCS_properties MIC_monitoring="true" key_lock_number="0"/>
 				</DAL>
-				<DAL id="2" name="dal2" type="UIM" QTY_DKM="0" DKM_type="" DAL_monitoring="true">
+				<DAL id="2" name="dal2" type="UIM" QTY_DKM="0" DKM_type=" " DAL_monitoring="true">
 					<UIM_properties UIM_version="2"/>
 				</DAL>
 			</DALs>
