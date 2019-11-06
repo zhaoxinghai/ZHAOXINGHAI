@@ -18,9 +18,9 @@
 			<amplifier id="2" name="AMP 4XD125B" type="AMP 4XD125B"/>
 		</amplifiers>
 		<PA_channels>
-			<PA_channel id="1" amplifier_id="1" amplifier_channel="1" monitoring="true" amplification="42.2" is_backup_channel="false" backup_device_id="237" backup_speaker_circuit="25"/>
-			<PA_channel id="2" amplifier_id="1" amplifier_channel="2" monitoring="true" amplification="42.2" is_backup_channel="false" backup_device_id="" backup_speaker_circuit=""/>
-			<PA_channel id="4" amplifier_id="2" amplifier_channel="1" monitoring="true" amplification="42.2" is_backup_channel="true" backup_device_id="" backup_speaker_circuit=""/>
+			<PA_channel id="1" amplifier_id="1" amplifier_channel="1" monitoring="true" amplification="42.2" is_backup_channel="false" backup_device_id="237" backup_AO="25"/>
+			<PA_channel id="2" amplifier_id="1" amplifier_channel="2" monitoring="true" amplification="42.2" is_backup_channel="false" backup_device_id="-1" backup_AO="-1"/>
+			<PA_channel id="4" amplifier_id="2" amplifier_channel="1" monitoring="true" amplification="42.2" is_backup_channel="true" backup_device_id="-1" backup_AO="-1"/>
 		</PA_channels>
 		<speaker_circuits>
 			<speaker_circuit id="1" name="1-1" module="1" line="1" AO="1" power="50" monitoring="true" QTY_speaker="5" earth_fault_detection="true" accurate_earth_fault_detection="false" threshold_earth_fault="50000" line_monitoring="true" monitoring_type="impedance measurement" monitoring_mode="default" tolerance="10" statistic_average_tracing="false" threshold_short_circuit="8" threshold_open_line="20000">
@@ -45,12 +45,12 @@
 			</speaker_circuit>
 		</speaker_circuits>
 		<loops>
-			<loop id="1" AO_list="1,9" mode="" isolators_power="2" QTY_isolators="2" start_mode="simple" communication_low_voltage="10000" communication_high_voltage="70000" relay_closing_impulse_voltage="26500" fast_boot_voltage="65000" fast_boot_powerup_time="3500" initial_relay_closing_impulse_voltage="75000" UPS_max_down_time="60000" UPS_boost_time="3000" loop_supply_voltage="31000" impedance_tolerance="10"/>
+			<loop id="1" name="" AO_list="1,9" mode="" isolators_power="2" QTY_isolators="2" start_mode="simple" communication_low_voltage="10000" communication_high_voltage="70000" relay_closing_impulse_voltage="26500" fast_boot_voltage="65000" fast_boot_powerup_time="3500" initial_relay_closing_impulse_voltage="75000" UPS_max_down_time="60000" UPS_boost_time="3000" loop_supply_voltage="31000" impedance_tolerance="10"/>
 		</loops>
 		<relay_matrices>
 			<relay_matrix id="1" PA_channel="1" link_PA_channel="3" AO_list="1,2,9"/>
-			<relay_matrix id="2" PA_channel="2" link_PA_channel="" AO_list="10"/>
-			<relay_matrix id="3" PA_channel="4" link_PA_channel="" AO_list="25"/>
+			<relay_matrix id="2" PA_channel="2" link_PA_channel="-1" AO_list="10"/>
+			<relay_matrix id="3" PA_channel="4" link_PA_channel="-1" AO_list="25"/>
 		</relay_matrices>
 		<extern_module type="DAL+Contact">
 			<DALs>
@@ -123,7 +123,7 @@
 				<cne id="2" name="" equation="DELAY(00:00:20,00:00:00,OR(I_237_1,I_237_2))" action_list="VOL_1,DO_1"/>
 			</cnes>
 			<schedules>
-				<schedule id="1" start_date="2019_09_22" occurrence_time="14:30" repeat_type="1" end_date="2019_12_30" action_list="PG_2">
+				<schedule id="1" name="sch 1" start_date="2019_09_22" occurrence_time="14:30" repeat_type="1" end_date="2019_12_30" action_list="PG_2">
 					<daily every_n_days="7"/>
 					<weekly every_n_weeks="2" days_of_week="7,1"/>
 					<monthly every_n_months="1" occurrence_index="2" occurrence_type="13"/>
