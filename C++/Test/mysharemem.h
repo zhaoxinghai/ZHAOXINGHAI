@@ -24,16 +24,21 @@ public:
 
     bool Open();
 
+    void Wait();
+    void Notify();
+
     unsigned char   *m_pBuffer;
 
 #ifdef WIN32
     HANDLE           m_hMapFile;
     LPVOID           m_pMapBuf;
     HANDLE           m_hMutex;
+    HANDLE           m_hEvent;
 #else
     int              m_hMapFile;
     void*            m_pMapBuf;
     int              m_sem_mutex_id;
+    int              m_sem_wait_id;
 #endif
 };
 

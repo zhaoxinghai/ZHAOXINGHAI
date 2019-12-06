@@ -34,8 +34,11 @@ void Demo1()
     {
         std::cin>>a;
 
-        TEST::CShareLock lck(&file);
-        pMem->m_Test = a;
+        {
+            TEST::CShareLock lck(&file);
+            pMem->m_Test = a;
+        }
+        file.Notify();
     }
 }
 
@@ -49,13 +52,11 @@ void Demo2()
     int a = 0;
     while(true)
     {
-        TEST::CShareLock lck(&file);
-        if(pMem->m_Test != a)
+        file.Wait();
         {
-            a = pMem->m_Test;
-            std::cout<<a<<std::endl;
+            TEST::CShareLock lck(&file);
+            std::cout<<pMem->m_Test<<std::endl;
         }
-        SleepMinisecond(50);
     }
 }
 

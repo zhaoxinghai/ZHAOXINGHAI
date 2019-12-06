@@ -5,9 +5,11 @@
 #ifdef WIN32
 #define M_NAME L"sharememory"
 #define MUTEX_NAME L"sharemutex"
+#define EVENT_NAME L"waitevent"
 #else
-#define SHM_KEY  123
-#define SEM_KEY  1234
+#define SHM_KEY       123
+#define SEM_KEY       1234
+#define SEM_KEY_WAIT  2345
 #endif
 
 namespace TEST {
@@ -62,6 +64,9 @@ bool CShareMem::Open()
 
     //mutex
     m_hMutex = CreateMutex(NULL,FALSE,MUTEX_NAME);
+
+    //event
+    m_hEvent = CreateEvent(NULL, FALSE, FALSE, EVENT_NAME);
 #else
     //share memory
     key_t key=ftok("/tmp",SHM_KEY);
@@ -101,6 +106,26 @@ bool CShareMem::Open()
             perror("semctl init error");
         }
     }
+
+    //semaphore wait
+    m_sem_wait_id = semget((key_t)SEM_KEY_WAIT,1,IPC_CREAT | IPC_EXCL| 0600);
+    if(m_sem_wait_id == -1)
+    {
+        m_sem_wait_id = semget((key_t)SEM_KEY_WAIT,1,IPC_CREAT | 0600);
+        if(m_sem_wait_id == -1)
+        {
+            printf("semget error");
+        }
+    }
+    else
+    {
+        union semun a;
+        a.val = 1;
+        if(semctl(m_sem_wait_id,0,SETVAL,a)==-1)
+        {
+            perror("semctl init error");
+        }
+    }
 #endif
 
     m_pBuffer = (unsigned char*)m_pMapBuf;
@@ -110,6 +135,38 @@ bool CShareMem::Open()
         return false;
     }
     return true;
+}
+
+void CShareMem::Wait()
+{
+#ifdef WIN32
+    ::WaitForSingleObject(m_hEvent, INFINITE);
+#else
+    struct sembuf buf;
+    buf.sem_num = 0;
+    buf.sem_op = -1;//p control
+    buf.sem_flg = SEM_UNDO;
+    if(semop(m_pShare->m_sem_mutex_id,&buf,1)==-1)
+    {
+       perror("p error");
+    }
+#endif
+}
+
+void CShareMem::Notify()
+{
+#ifdef WIN32
+    SetEvent(m_hEvent);
+#else
+    struct sembuf buf;
+    buf.sem_num = 0;
+    buf.sem_op = 1;  //v control
+    buf.sem_flg = SEM_UNDO;
+    if(semop(m_pShare->m_sem_mutex_id,&buf,1)==-1)
+    {
+        perror("v error");
+    }
+#endif
 }
 
 CShareLock::CShareLock(CShareMem* pShare)
