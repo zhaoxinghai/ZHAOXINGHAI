@@ -13,7 +13,8 @@ LIBS += -L./ -lpthread
 QMAKE_CXXFLAGS += -g
 }
 
-INCLUDEPATH=./g711 \
+INCLUDEPATH=./common \
+	./g711 \
     ./g722 \
     ./libresample
 
@@ -24,15 +25,15 @@ SOURCES += main.cpp \
     audioreceive.cpp \
     d1adpcmcodec.cpp \
     threaddevice.cpp \
-    common.cpp \
-    threadpool.cpp \
+    common/common.cpp \
+    common/threadpool.cpp \
     audiobuffer.cpp \
     audiofile.cpp \
-    cyclebuffer.cpp \
+    common/cyclebuffer.cpp \
     d1rtpframelayer.cpp \
-    mythread.cpp \
+    common/mythread.cpp \
     public.cpp \
-    mysocket.cpp \
+    common/mysocket.cpp \
     threadcapture.cpp \
     g711/g711.cpp \
     g722/g722_decode.c \
@@ -48,15 +49,15 @@ HEADERS += \
     audioreceive.h \
     d1adpcmcodec.h \
     threaddevice.h \
-    common.h \
-    threadpool.h \
+    common/common.h \
+    common/threadpool.h \
     audiobuffer.h \
     audiofile.h \
-    cyclebuffer.h \
+    common/cyclebuffer.h \
     d1rtpframelayer.h \
-    mythread.h \
+    common/mythread.h \
     public.h \
-    mysocket.h \
+    common/mysocket.h \
     threadcapture.h \
     g711/g711.h \
     g722/g722.h \
