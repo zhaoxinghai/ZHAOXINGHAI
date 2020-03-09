@@ -10,5 +10,13 @@
 		<playlilst id="1" name="test audio" type="Audio" device_id="237" audio_file_id_list="F_1,P_10,F_2" channel="40" title="1" description=""/>
 		<playlilst id="2" name="VA audio" type="Audio" device_id="237" audio_file_id_list="F_3" channel="250" title="1" description=""/>
 	</playlilsts>
+	<groups>
+		<group name="1111" playlists="1,2">
+		<group name="2222" playlists="1,2">
+		<group name="3333" playlists="1,2">
+	</groups>
 	<about description="" configuration_version="" last_modified="" schema_version="0.0.0-T004" />
 </audio_database>
+
+15 1
+23 32
