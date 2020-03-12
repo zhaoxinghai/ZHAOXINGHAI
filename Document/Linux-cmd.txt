@@ -1,3 +1,6 @@
+¡ñ ETCS:
+user:root pass:HON*emea&1357 resetpass:2352385087 defaultpass:WELLemea246800
+
 ¡ñ mount: 
 mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.35:/media/honeywell/Work/Source/ETCS/Bin /mnt
 mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.35:/media/honeywell/Work/Source/ETCS-VOC/Bin /mnt
