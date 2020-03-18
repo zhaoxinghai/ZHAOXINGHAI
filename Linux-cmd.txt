@@ -80,35 +80,17 @@ root[0]@DOM-47(192.168.1.47#47) [  5+] >opmode normal
 
 ● 串口调试：前3位是黑、白、绿
 
-● CPU usage:
-CAudioPlay    带音量调节      8.3%    
-CAudioPlay    没有音量调节    3.3%
-CAudioReceive                 4.6%
-CThreadCapture                2.3%    
-CThreadPlay                   1.3%
+1. ETCS的TTS语音合成.
 
-ETCS_QML                      3.3%
-QSGRenderThread 没锁屏        9.3%
-QSGRenderThread 锁屏          0.7%
-CThreadIO       GPIO检测      2.0%
+2. ETCS的监听.
+监听的分区
 
-问题点：
-1，英文键盘
-9，USB加载MP3与WAV(CPU占用高)。
-10，背光调节功能。
-错误及恢复
-Ackknow
+3. PAMMI监听
+临听分区
 
-Live独立页面设计
-Record图标修改
-VA独立页面设计
-搜索界面设计
+4. ETCS语音查询
+通过PAMMI可查询与播放
+集成一个小功能。
 
-
-1. Activate a call1 in eTCS ,etcs mic- etcs spk , priority 250
-2.Activate a call2  in dcs key 1 :ETCs mic - etcs spk and dcs spk ,priority 250,the eTCs program down.
-
-But if the call 1 is priority 249 ,
-then activate call2 function ok, 
-if the call1 is etcs mic - dcs spk ,
-priority 250 ,then activate call2, function also ok too.
+5. 第三方集成语音播放 
+交期

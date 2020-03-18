@@ -1,0 +1,24 @@
+● svn://158.138.48.83/VaPa 
+user:xzha	
+pass:vapa837
+
+● https://svn.honeywell.com/HBT/GreaterChina-APAC/PA-Server
+PAServer svn
+
+● https://github.com/zhaoxinghai/ZHAOXINGHAI.git
+ZHAOXINGHAI git
+
+● https://bitbucket.honeywell.com/scm/gnp/dom2.git
+DOM2 git
+
+● https://bitbucket.honeywell.com/scm/etcs/gnp-en-uri.git
+ETCS git
+
+● Project SVN
+https://acssvn.honeywell.com/GreaterChina/HSF/Ethernet-Touch-Call-Station/trunk
+https://acssvn.honeywell.com/GreaterChina/HFS/PAMMI-enhancements-MTRC-Hongkong/trunk/Source
+https://acssvn.honeywell.com/GreaterChina/HFS/PAMMI-Configuration-Tool
+svn://158.138.48.83/VaPa/PAMMI/trunk
+
+● DAL protocol
+http://160.221.186.12/index.php/Variodyn_D1/Software/DOM/MCU user:e494950  pass:88229715
