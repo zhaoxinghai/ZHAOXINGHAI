@@ -4,12 +4,18 @@ user:root pass:HON*emea&1357 resetpass:2352385087 defaultpass:WELLemea246800
 ● mount: 
 mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.35:/media/honeywell/Work/Source/ETCS/Bin /mnt
 mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.35:/media/honeywell/Work/Source/ETCS-VOC/Bin /mnt
+mount -o nolock \\192.168.1.230\home\zhao\NFS x:
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/mnt/
+mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.230:/home/zhao\NFS /mnt
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/Bin/
 
 sys/class/backlight/backlight/
 echo 100~255 > brightness
+
+● SCU function:
+1,Audio-logging.
 
 ● 查看当前路径 pwd
 ● 文件查找 find [路径] [参数] : find . -name "test.adp" | find / -name "test.adp"
@@ -21,12 +27,11 @@ echo 100~255 > brightness
 ● 复制文件 cp filename filename2
 ● 复制文件夹 cp -r directory/* /tmp/
 ● 修改权限 chmod 777 -R directory
-● 显示文件列表 ls -l
 ● 解压 tar -xvzf test.tar.gz
 ● 压缩 tar -czvf test.tar.gz record.adp
 ● deb包的安装(cd 到安装包的目录,dpkg -i 安装包名字)
 ● 查看文件内容 cat filename.ext
-
+● rpm -ivh test.rpm
 ------------------------------------------------------------------------
 
 ● 修改用户密码 sudo passwd zhao
@@ -72,6 +77,10 @@ https://acssvn.honeywell.com/GreaterChina/HFS/PAMMI-Configuration-Tool
 
 ● 查看设备列表:sudo fdisk -l
 ● 设置启动项 vi /etc/rc.local
+SCU ubuntu:
+1,install mpg123-1.12.1.tar.bz2
+2,install ffmpeg-0.5.1.tar.gz
+install busybox
 
 ● D1 vlan 配置
 root[0]@DOM-47(192.168.1.47#47) [  3-] >opmode config
@@ -80,17 +89,31 @@ root[0]@DOM-47(192.168.1.47#47) [  5+] >opmode normal
 
 ● 串口调试：前3位是黑、白、绿
 
-1. ETCS的TTS语音合成.
+https://acsjira.honeywell.com/browse/GNP-3081 
 
-2. ETCS的监听.
-监听的分区
+RTPCONF
+paproto legacymode 1
+Audio_Flashdisk
 
-3. PAMMI监听
-临听分区
 
-4. ETCS语音查询
-通过PAMMI可查询与播放
-集成一个小功能。
+贵阳机场开会
+ETCS-TTS-protocol
+GNP开会。
+DAL问题调试
+可以修改
 
-5. 第三方集成语音播放 
-交期
+SCU查看硬盘空间
+
+
+
+
+
+
+
+
+
+
+脚本过程
+sculinux-install.sh
+sculinux-configure.sh
+sculinux-setup.sh
