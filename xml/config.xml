@@ -4,7 +4,7 @@
 		<general name="DOM 2" device_id="237" type="DOM II" IP="192.168.1.237"/>
 		<monitoring power_amplifier="true" earth_fault_detection="true" impedance_measurement="true" main_power="true" backup_power="true"/>
 		<synchronization mode="client" time="5"/>
-		<error_handling network="true" reset_state="automatic" sound="true" AMFNSD="true" IEFNSD="true"/>
+		<error_handling network="true" reset_state="true" sound="true" AMFNSD="true" IEFNSD="true"/>
 		<energy_saving_mode amplifier_USV_mode="1" turn_on_time="5" follow_up_time="60"/>
 		<temporary_storage name="Config_1" device_id="237" timeout="1800" attempts="1" presignal="AI_237_31_1" end_signal="AI_237_32_1"/>
 		<setting upload_master="127:DOM II name:192.168.1.127"/>
