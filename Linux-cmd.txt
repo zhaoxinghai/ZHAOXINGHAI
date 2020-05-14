@@ -2,37 +2,20 @@
 user:root pass:HON*emea&1357 resetpass:2352385087 defaultpass:WELLemea246800
 
 ● mount: 
-mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.35:/media/honeywell/Work/Source/ETCS/Bin /mnt
-mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.35:/media/honeywell/Work/Source/ETCS-VOC/Bin /mnt
-mount -o nolock \\192.168.1.230\home\zhao\NFS x:
-
-mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.230:/home/zhao\NFS /mnt
-
+Window: mount -o nolock \\192.168.1.230\nfs x:
+Linux : mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.230:/nfs /mnt
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/Bin/
-
-sys/class/backlight/backlight/
-echo 100~255 > brightness
-
-● SCU function:
-1,Audio-logging.
 
 ● 查看当前路径 pwd
 ● 文件查找 find [路径] [参数] : find . -name "test.adp" | find / -name "test.adp"
-● 新建文件 touch filename
-● 新建文件夹 mkdir directory
-● 删除文件夹 rm -r directory
-● 移动文件夹|文件 mv directory directory2
-● 新建文件 touch filename
-● 复制文件 cp filename filename2
-● 复制文件夹 cp -r directory/* /tmp/
-● 修改权限 chmod 777 -R directory
 ● 解压 tar -xvzf test.tar.gz
 ● 压缩 tar -czvf test.tar.gz record.adp
 ● deb包的安装(cd 到安装包的目录,dpkg -i 安装包名字)
 ● 查看文件内容 cat filename.ext
 ● rpm -ivh test.rpm
 ------------------------------------------------------------------------
+
+● tcpdump -i enp2s0 src host 192.168.1.225
 
 ● 修改用户密码 sudo passwd zhao
 ● 修改环境变量 /etc/profile增加以下内容(当前用户 /Home/.bashrc或/home/.bash_profile)
@@ -67,14 +50,6 @@ top -H -p "pidof process"   线
   #sudo apt-get install nfs-kernel-server
   #sudo gedit  /etc/exports add item"/home/zhao/ETCS/Bin *(rw,sync,no_root_squash,no_subtree_check)"
   #sudo /etc/init.d/nfs-kernel-server restart
-● RapidSVN
-#sudo apt-get install rapidsvn
-
-● Project SVN
-https://acssvn.honeywell.com/GreaterChina/HSF/Ethernet-Touch-Call-Station/trunk
-https://acssvn.honeywell.com/GreaterChina/HFS/PAMMI-enhancements-MTRC-Hongkong/trunk/Source
-https://acssvn.honeywell.com/GreaterChina/HFS/PAMMI-Configuration-Tool
-
 ● 查看设备列表:sudo fdisk -l
 ● 设置启动项 vi /etc/rc.local
 SCU ubuntu:
@@ -86,6 +61,8 @@ install busybox
 root[0]@DOM-47(192.168.1.47#47) [  3-] >opmode config
 root[0]@DOM-47(192.168.1.47#47) [  4+] >vlancfg -1 0
 root[0]@DOM-47(192.168.1.47#47) [  5+] >opmode normal
+
+● sudo dd if=./kali.iso of=/dev/sdb
 
 ● 串口调试：前3位是黑、白、绿
 
@@ -104,16 +81,13 @@ DAL问题调试
 
 SCU查看硬盘空间
 
-
-
-
-
-
-
-
-
-
 脚本过程
 sculinux-install.sh
 sculinux-configure.sh
 sculinux-setup.sh
+
+playlilsts配置文件名称变更为playlists
+t_PAChannel增加iTolerance
+t_Zone:output_list变为string
+t_Action:targets变为string
+t_MsgGroup:strSubDeviceIDList变为string

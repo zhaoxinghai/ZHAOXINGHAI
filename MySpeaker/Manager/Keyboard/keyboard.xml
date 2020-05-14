@@ -1,0 +1,328 @@
+<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">
+  <Author>Yuan, Songhua</Author>
+  <LastAuthor>Yuan, Songhua</LastAuthor>
+  <Created>2018-05-03T07:07:49Z</Created>
+  <LastSaved>2018-05-03T07:44:42Z</LastSaved>
+  <Version>16.00</Version>
+ </DocumentProperties>
+ <OfficeDocumentSettings xmlns="urn:schemas-microsoft-com:office:office">
+  <AllowPNG/>
+ </OfficeDocumentSettings>
+ <ExcelWorkbook xmlns="urn:schemas-microsoft-com:office:excel">
+  <WindowHeight>8115</WindowHeight>
+  <WindowWidth>15885</WindowWidth>
+  <WindowTopX>0</WindowTopX>
+  <WindowTopY>0</WindowTopY>
+  <ActiveSheet>1</ActiveSheet>
+  <ProtectStructure>False</ProtectStructure>
+  <ProtectWindows>False</ProtectWindows>
+ </ExcelWorkbook>
+ <Styles>
+  <Style ss:ID="Default" ss:Name="Normal">
+   <Alignment ss:Vertical="Bottom"/>
+   <Borders/>
+   <Font ss:FontName="Calibri" x:Family="Swiss" ss:Size="11" ss:Color="#000000"/>
+   <Interior/>
+   <NumberFormat/>
+   <Protection/>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="English">
+  <Table ss:ExpandedColumnCount="15" ss:ExpandedRowCount="19" x:FullColumns="1"
+   x:FullRows="1" ss:DefaultRowHeight="15">
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_1_1</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_2_1</Data></Cell>
+    <Cell><Data ss:Type="String">a</Data></Cell>
+    <Cell><Data ss:Type="String">b</Data></Cell>
+    <Cell><Data ss:Type="String">c</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_3_1</Data></Cell>
+    <Cell><Data ss:Type="String">d</Data></Cell>
+    <Cell><Data ss:Type="String">e</Data></Cell>
+    <Cell><Data ss:Type="String">f</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_4_1</Data></Cell>
+    <Cell><Data ss:Type="String">g</Data></Cell>
+    <Cell><Data ss:Type="String">h</Data></Cell>
+    <Cell><Data ss:Type="String">i</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_5_1</Data></Cell>
+    <Cell><Data ss:Type="String">j</Data></Cell>
+    <Cell><Data ss:Type="String">k</Data></Cell>
+    <Cell><Data ss:Type="String">l</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_6_1</Data></Cell>
+    <Cell><Data ss:Type="String">m</Data></Cell>
+    <Cell><Data ss:Type="String">n</Data></Cell>
+    <Cell><Data ss:Type="String">o</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_7_1</Data></Cell>
+    <Cell><Data ss:Type="String">p</Data></Cell>
+    <Cell><Data ss:Type="String">q</Data></Cell>
+    <Cell><Data ss:Type="String">r</Data></Cell>
+    <Cell><Data ss:Type="String">s</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_8_1</Data></Cell>
+    <Cell><Data ss:Type="String">t</Data></Cell>
+    <Cell><Data ss:Type="String">u</Data></Cell>
+    <Cell><Data ss:Type="String">v</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_9_1</Data></Cell>
+    <Cell><Data ss:Type="String">w</Data></Cell>
+    <Cell><Data ss:Type="String">x</Data></Cell>
+    <Cell><Data ss:Type="String">y</Data></Cell>
+    <Cell><Data ss:Type="String">z</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_1_2</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_2_2</Data></Cell>
+    <Cell><Data ss:Type="String">A</Data></Cell>
+    <Cell><Data ss:Type="String">B</Data></Cell>
+    <Cell><Data ss:Type="String">C</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_3_2</Data></Cell>
+    <Cell><Data ss:Type="String">D</Data></Cell>
+    <Cell><Data ss:Type="String">E</Data></Cell>
+    <Cell><Data ss:Type="String">F</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_4_2</Data></Cell>
+    <Cell><Data ss:Type="String">G</Data></Cell>
+    <Cell><Data ss:Type="String">H</Data></Cell>
+    <Cell><Data ss:Type="String">I</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_5_2</Data></Cell>
+    <Cell><Data ss:Type="String">J</Data></Cell>
+    <Cell><Data ss:Type="String">K</Data></Cell>
+    <Cell><Data ss:Type="String">L</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_6_2</Data></Cell>
+    <Cell><Data ss:Type="String">M</Data></Cell>
+    <Cell><Data ss:Type="String">N</Data></Cell>
+    <Cell><Data ss:Type="String">O</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_7_2</Data></Cell>
+    <Cell><Data ss:Type="String">P</Data></Cell>
+    <Cell><Data ss:Type="String">Q</Data></Cell>
+    <Cell><Data ss:Type="String">R</Data></Cell>
+    <Cell><Data ss:Type="String">S</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_8_2</Data></Cell>
+    <Cell><Data ss:Type="String">T</Data></Cell>
+    <Cell><Data ss:Type="String">U</Data></Cell>
+    <Cell><Data ss:Type="String">V</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_9_2</Data></Cell>
+    <Cell><Data ss:Type="String">W</Data></Cell>
+    <Cell><Data ss:Type="String">X</Data></Cell>
+    <Cell><Data ss:Type="String">Y</Data></Cell>
+    <Cell><Data ss:Type="String">Z</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_CH</Data></Cell>
+    <Cell><Data ss:Type="String">,</Data></Cell>
+    <Cell><Data ss:Type="String">.</Data></Cell>
+    <Cell><Data ss:Type="String">?</Data></Cell>
+    <Cell><Data ss:Type="String">!</Data></Cell>
+    <Cell><Data ss:Type="String">:</Data></Cell>
+    <Cell><Data ss:Type="String">;</Data></Cell>
+    <Cell><Data ss:Type="String">…</Data></Cell>
+    <Cell><Data ss:Type="String">~</Data></Cell>
+    <Cell><Data ss:Type="String">_</Data></Cell>
+    <Cell><Data ss:Type="String">-</Data></Cell>
+    <Cell><Data ss:Type="String" x:Ticked="1"></Data></Cell>
+    <Cell><Data ss:Type="String">/</Data></Cell>
+    <Cell><Data ss:Type="String">@</Data></Cell>
+    <Cell><Data ss:Type="String">*</Data></Cell>
+   </Row>
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+   <PageSetup>
+    <Header x:Margin="0.3"/>
+    <Footer x:Margin="0.3"/>
+    <PageMargins x:Bottom="0.75" x:Left="0.7" x:Right="0.7" x:Top="0.75"/>
+   </PageSetup>
+   <Unsynced/>
+   <Panes>
+    <Pane>
+     <Number>3</Number>
+     <ActiveRow>12</ActiveRow>
+     <ActiveCol>3</ActiveCol>
+    </Pane>
+   </Panes>
+   <ProtectObjects>False</ProtectObjects>
+   <ProtectScenarios>False</ProtectScenarios>
+  </WorksheetOptions>
+ </Worksheet>
+ <Worksheet ss:Name="Sheet2">
+  <Table ss:ExpandedColumnCount="15" ss:ExpandedRowCount="19" x:FullColumns="1"
+   x:FullRows="1" ss:DefaultRowHeight="15">
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_1_1</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_2_1</Data></Cell>
+    <Cell><Data ss:Type="String">a</Data></Cell>
+    <Cell><Data ss:Type="String">b</Data></Cell>
+    <Cell><Data ss:Type="String">c</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_3_1</Data></Cell>
+    <Cell><Data ss:Type="String">d</Data></Cell>
+    <Cell><Data ss:Type="String">e</Data></Cell>
+    <Cell><Data ss:Type="String">f</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_4_1</Data></Cell>
+    <Cell><Data ss:Type="String">g</Data></Cell>
+    <Cell><Data ss:Type="String">h</Data></Cell>
+    <Cell><Data ss:Type="String">i</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_5_1</Data></Cell>
+    <Cell><Data ss:Type="String">j</Data></Cell>
+    <Cell><Data ss:Type="String">k</Data></Cell>
+    <Cell><Data ss:Type="String">l</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_6_1</Data></Cell>
+    <Cell><Data ss:Type="String">m</Data></Cell>
+    <Cell><Data ss:Type="String">n</Data></Cell>
+    <Cell><Data ss:Type="String">o</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_7_1</Data></Cell>
+    <Cell><Data ss:Type="String">p</Data></Cell>
+    <Cell><Data ss:Type="String">q</Data></Cell>
+    <Cell><Data ss:Type="String">r</Data></Cell>
+    <Cell><Data ss:Type="String">s</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_8_1</Data></Cell>
+    <Cell><Data ss:Type="String">t</Data></Cell>
+    <Cell><Data ss:Type="String">u</Data></Cell>
+    <Cell><Data ss:Type="String">v</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_9_1</Data></Cell>
+    <Cell><Data ss:Type="String">w</Data></Cell>
+    <Cell><Data ss:Type="String">x</Data></Cell>
+    <Cell><Data ss:Type="String">y</Data></Cell>
+    <Cell><Data ss:Type="String">z</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_1_2</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_2_2</Data></Cell>
+    <Cell><Data ss:Type="String">A</Data></Cell>
+    <Cell><Data ss:Type="String">B</Data></Cell>
+    <Cell><Data ss:Type="String">C</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_3_2</Data></Cell>
+    <Cell><Data ss:Type="String">D</Data></Cell>
+    <Cell><Data ss:Type="String">E</Data></Cell>
+    <Cell><Data ss:Type="String">F</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_4_2</Data></Cell>
+    <Cell><Data ss:Type="String">G</Data></Cell>
+    <Cell><Data ss:Type="String">H</Data></Cell>
+    <Cell><Data ss:Type="String">I</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_5_2</Data></Cell>
+    <Cell><Data ss:Type="String">J</Data></Cell>
+    <Cell><Data ss:Type="String">K</Data></Cell>
+    <Cell><Data ss:Type="String">L</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_6_2</Data></Cell>
+    <Cell><Data ss:Type="String">M</Data></Cell>
+    <Cell><Data ss:Type="String">N</Data></Cell>
+    <Cell><Data ss:Type="String">O</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_7_2</Data></Cell>
+    <Cell><Data ss:Type="String">P</Data></Cell>
+    <Cell><Data ss:Type="String">Q</Data></Cell>
+    <Cell><Data ss:Type="String">R</Data></Cell>
+    <Cell><Data ss:Type="String">S</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_8_2</Data></Cell>
+    <Cell><Data ss:Type="String">T</Data></Cell>
+    <Cell><Data ss:Type="String">U</Data></Cell>
+    <Cell><Data ss:Type="String">V</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_9_2</Data></Cell>
+    <Cell><Data ss:Type="String">W</Data></Cell>
+    <Cell><Data ss:Type="String">X</Data></Cell>
+    <Cell><Data ss:Type="String">Y</Data></Cell>
+    <Cell><Data ss:Type="String">Z</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0">
+    <Cell><Data ss:Type="String">KEY_CH</Data></Cell>
+    <Cell><Data ss:Type="String">,</Data></Cell>
+    <Cell><Data ss:Type="String">.</Data></Cell>
+    <Cell><Data ss:Type="String">?</Data></Cell>
+    <Cell><Data ss:Type="String">!</Data></Cell>
+    <Cell><Data ss:Type="String">:</Data></Cell>
+    <Cell><Data ss:Type="String">;</Data></Cell>
+    <Cell><Data ss:Type="String">…</Data></Cell>
+    <Cell><Data ss:Type="String">~</Data></Cell>
+    <Cell><Data ss:Type="String">_</Data></Cell>
+    <Cell><Data ss:Type="String">-</Data></Cell>
+    <Cell><Data ss:Type="String" x:Ticked="1"></Data></Cell>
+    <Cell><Data ss:Type="String">/</Data></Cell>
+    <Cell><Data ss:Type="String">@</Data></Cell>
+    <Cell><Data ss:Type="String">*</Data></Cell>
+   </Row>
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+   <PageSetup>
+    <Header x:Margin="0.3"/>
+    <Footer x:Margin="0.3"/>
+    <PageMargins x:Bottom="0.75" x:Left="0.7" x:Right="0.7" x:Top="0.75"/>
+   </PageSetup>
+   <Unsynced/>
+   <Selected/>
+   <Panes>
+    <Pane>
+     <Number>3</Number>
+     <ActiveRow>12</ActiveRow>
+     <ActiveCol>3</ActiveCol>
+    </Pane>
+   </Panes>
+   <ProtectObjects>False</ProtectObjects>
+   <ProtectScenarios>False</ProtectScenarios>
+  </WorksheetOptions>
+ </Worksheet>
+</Workbook>

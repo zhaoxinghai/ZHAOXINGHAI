@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LogicConfig version="0.0.1">
+	<LocalConfig>
+		<Local Name="Region" Value="ETCS_GERMANY"/>
+		<Local Name="Language" Value="English"/>	
+		<Local Name="Backlight" Value="255"/>	
+	</LocalConfig>
+    <Config>
+        <Local Name="VlanValid" Value="true"/>
+        <Local Name="VlanID" Value="3"/>
+        <Local Name="VlanPriority" Value="6"/>
+        <Local Name="VlanIP" Value="10.0.0.1"/>
+        <Local Name="VlanMask" Value="255.255.255.0"/>
+    </Config>	
+</LogicConfig>
