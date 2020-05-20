@@ -91,3 +91,12 @@ t_PAChannel增加iTolerance
 t_Zone:output_list变为string
 t_Action:targets变为string
 t_MsgGroup:strSubDeviceIDList变为string
+
+
+ACDC电源：
+5V-2A的13元
+
+规格：xh2.54 2p3p-12p
+
+音箱：宽155
+音箱：深105
