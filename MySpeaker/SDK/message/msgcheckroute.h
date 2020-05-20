@@ -2,7 +2,7 @@
 #ifndef MESSAGE_CHECKROUTE_H
 #define MESSAGE_CHECKROUTE_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "msgbase.h"
 
 class CMsgCheckRoute : public CMsgBase

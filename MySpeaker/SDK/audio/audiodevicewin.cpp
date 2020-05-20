@@ -4,14 +4,15 @@
 #include "audiodevicewin.h"
 #include "mylog.h"
 #include "common.h"
-#include "paerror.h"
+#include "sdkerror.h"
 
 #pragma comment(lib,"Winmm.lib") 
 
-const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
-const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
-const IID IID_IAudioClient = __uuidof(IAudioClient);
-const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
+#define WINMM_CLSID \
+const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator); \
+const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);   \
+const IID IID_IAudioClient = __uuidof(IAudioClient);                 \
+const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);     \
 const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
 #define EXIT_ON_ERROR(hres)    if (FAILED(hres)) { return false; }
@@ -55,6 +56,8 @@ CAudioDevice::~CAudioDevice()
 
 bool CAudioDevice::InitDevice(bool bCapture,int nChannel,int nBitsPerSamp)
 {
+    WINMM_CLSID
+
     m_bCapture = bCapture;
     m_nChannel = nChannel;
     m_nBitsPerSamp = nBitsPerSamp;
@@ -184,6 +187,7 @@ bool CAudioDevice::StartCapture(CThreadDevice *pMyDest)
 
 bool CAudioDevice::InitAudioClient()
 {
+    WINMM_CLSID
     //DeviceEnumerator
     HRESULT hr = CoCreateInstance(
         CLSID_MMDeviceEnumerator,

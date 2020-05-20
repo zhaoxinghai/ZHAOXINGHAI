@@ -2,7 +2,7 @@
 #ifndef THREAD_PLAY_H
 #define THREAD_PLAY_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "mythread.h"
 #include "audiodevice.h"
 #include "threaddevice.h"

@@ -1,7 +1,7 @@
 ﻿#ifndef __VPAUDIOCORE_D1ADPCMCODEC_H__
 #define __VPAUDIOCORE_D1ADPCMCODEC_H__
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "define.h"
 #include <stdint.h>
 

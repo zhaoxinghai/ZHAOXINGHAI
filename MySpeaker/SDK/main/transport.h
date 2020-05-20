@@ -2,7 +2,7 @@
 #ifndef TRANSPORT_H
 #define TRANSPORT_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "mysocket.h"
 #include "msgbase.h"
 

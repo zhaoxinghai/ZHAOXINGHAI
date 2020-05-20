@@ -38,25 +38,17 @@ void CPublic::SetChannelBuffer(unsigned char* Left,
     }
 }
 
-unsigned short CPublic::GetChRequest()
+int CPublic::GetChRequest()
 {
-    static unsigned short request = 0;
+    static int request = 0;
     request++;
-    if (request >= 65535)
-    {
-        request = 1;
-    }
     return request;
 }
 
-unsigned short CPublic::GetChProcess()
+int CPublic::GetChProcess()
 {
-    static unsigned short process = 0;
+    static int process = 0;
     process++;
-    if (process >= 65535)
-    {
-        process = 1;
-    }
     return process;
 }
 

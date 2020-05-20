@@ -2,7 +2,7 @@
 #ifndef MESSAGE_SYSSTATUS_H
 #define MESSAGE_SYSSTATUS_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "msgbase.h"
 
 class CMsgLifeSignal : public CMsgBase

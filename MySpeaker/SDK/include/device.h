@@ -62,60 +62,6 @@ enum e_Mode
     MODE_NORMAL
 };
 
-//device's type
-enum e_DEVICE_TYPE
-{
-    DEVICE_IP_SPEAKER_A20 = 0,
-    DEVICE_UNKNOW,
-};
-
-//the mininum unit
-struct t_VDevice
-{
-    t_VDevice& operator = (const t_VDevice& c)
-    {
-        if(this != &c)
-        {
-            this->type = c.type;
-            this->number = c.number;
-            this->channel = c.channel;
-        }
-        return (*this);
-    }
-    bool operator == (const t_VDevice& c)
-    {
-        if (type == c.type && number == c.number && channel == c.channel)
-        {
-            return true;
-        }
-        return false;
-    }
-    bool operator != (const t_VDevice& c)
-    {
-        if (type == c.type && number == c.number && channel == c.channel)
-        {
-            return false;
-        }
-        return true;
-    }
-    unsigned char  type;	 //type code defined at ASTYPE definition
-    unsigned short number;
-    unsigned char  channel;  //0 - 250 ......... channel of the device
-};
-
-//config
-struct t_Node
-{
-    t_Node()
-    {
-        eType = DEVICE_UNKNOW;
-    }
-    e_DEVICE_TYPE    eType;
-    int              nNode;
-    std::string      strIP;      //host ip
-    std::string      strName;    //device name
-};
-
 struct t_FILEMAP
 {
     t_FILEMAP()
@@ -223,7 +169,7 @@ struct t_VLANConfig
 
 struct t_VolReply
 {
-    t_VDevice device;
+    //t_VDevice device;
     float fVolume;
     float fMin;
     float fMax;

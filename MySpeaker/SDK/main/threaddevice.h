@@ -3,7 +3,7 @@
 #ifndef THREAD_DEVICE_H
 #define THREAD_DEVICE_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "device.h"
 #include "mythread.h"
 #include "audiodevice.h"

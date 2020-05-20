@@ -5,10 +5,16 @@
 
 CThreadAccept::CThreadAccept()
 {
+    m_nPort = 5966;
 }
 
 CThreadAccept::~CThreadAccept()
 {
+}
+
+void CThreadAccept::SetPort(int nPort)
+{
+    m_nPort = nPort;
 }
 
 void CThreadAccept::Run()
@@ -29,9 +35,9 @@ void CThreadAccept::Run()
         return;
     }
 
-    if (!m_Socket.Bind(1120))
+    if (!m_Socket.Bind(m_nPort))
     {
-        LOG_ERROR("%s", "Bind 1120");
+        LOG_ERROR("Bind %d Error.", m_nPort);
         return;
     }
 
@@ -50,9 +56,9 @@ void CThreadAccept::Run()
             auto pMsg = std::make_shared<CMsg>();
 
             strncpy(pMsg->szIP, szIP,sizeof(pMsg->szIP)-1);
-            pMsg->type = MSG_SOCK_CONNECT;
+            //pMsg->type = MSG_SOCK_CONNECT;
             pMsg->socket = socket;
-            CService::GetInstance()->Push(pMsg);
+            g_SDKServer.Push(pMsg);
         }
         else
         {

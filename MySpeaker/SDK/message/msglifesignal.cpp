@@ -1,6 +1,6 @@
 
 #include "msgbase.h"
-#include "msgsysstatus.h"
+#include "msglifesignal.h"
 #include "service.h"
 #include "common.h"
 
@@ -24,29 +24,22 @@ void CMsgLifeSignal::OnRespond(unsigned char* pBuf, const int len)
     int type = ReadLONG(pBuf);
     pBuf += 4;
 
-    //device name(40 bytes)
-    char szName[100] = { 0 };
-    strncpy(szName, (char*)pBuf[4],sizeof(szName));
-    pBuf += 40;
-
     //dwError
     int nError = ReadLONG(pBuf);
+    pBuf += 4;
 
-    /*
     if(nError == 1)
     {
-        int ErrorCount = ReadLONG(10);
-        for(int i = 0;i<10;i++)
+        int ErrorCount = ReadLONG(pBuf);
+        pBuf += 4;
+
+        for(int i = 0;i< ErrorCount;i++)
         {
-            //error type
-            //error number1
-            //error number2
-            WriteLONG(0);
-            WriteLONG(0);
-            WriteLONG(0);
+            int type = ReadLONG(pBuf); pBuf += 4;
+            int number1 = ReadLONG(pBuf); pBuf += 4;
+            int number2 = ReadLONG(pBuf); pBuf += 4;
         }
     }
-    */
 }
 
 void CMsgLifeSignal::GenerateMsg()
@@ -59,18 +52,8 @@ void CMsgLifeSignal::GenerateMsg()
     //device type
     WriteLONG(0);
 
-    //device name(40 bytes)
-    char szName[100] = { 0 };
-    CTSystem* p = CService::GetInstance()->m_pSelfSystem;
-    strncpy(szName, p->m_Node.strName.c_str(),sizeof(szName)-1);
-    for (int i = 0; i < 39; i++)
-    {
-        m_vBuffer.push_back(szName[i]);
-    }
-    m_vBuffer.push_back('\0');
-
     //Error
-    if (CService::GetInstance()->m_bLocalError)
+    if (g_SDKServer.m_bLocalError)
     {
         WriteLONG(0x01);
     }
@@ -78,7 +61,6 @@ void CMsgLifeSignal::GenerateMsg()
     {
         WriteLONG(0x00);
     }
-
     //Error count
     WriteLONG(1);
 

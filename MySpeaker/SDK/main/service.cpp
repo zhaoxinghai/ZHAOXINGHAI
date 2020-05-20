@@ -3,7 +3,6 @@
 #include "routemanager.h"
 #include "interfacemsg.h"
 #include "device.h"
-#include "sdk.h"
 #include "msgfactory.h"
 #include "mylog.h"
 #include "threadtimer.h"
@@ -18,8 +17,9 @@
 #include "cpsw_vlan.h"
 #endif
 
-extern PACallback g_Callback;
-CService *CService::inst =  new CService();                        //checked
+CService     g_SDKServer;
+SDKCallback  g_CallBack;
+
 CService::CService()
 {
     m_bExit = false;
@@ -48,6 +48,7 @@ CService::CService()
     m_bEnableSecurity = true;
 
     m_nBaseAddress = 224;
+    m_nBasePort = 5966;
 }
 
 CService::~CService()
@@ -64,17 +65,6 @@ CService::~CService()
     CAudioData::release();
     CSound::Release();
     CMyLog::Release();
-}
-
-CService* CService::GetInstance()
-{
-    return inst;
-}
-
-void CService::Release()
-{
-    delete inst;
-    inst = NULL;
 }
 
 bool CService::Init(t_Node &curNode, std::vector<t_Node> &vSystem)
@@ -303,24 +293,13 @@ void CService::RunMessage(CMsg* pMsg)
     case MSG_TRANSPORT_LINE:
     case MSG_GET_DEVICE_STATE:
     case MSG_VOLUME_AJUST_PORT:
-    case MSG_TEXT_OUT:
     {
         CInterface::RunMessage(pMsg);
-        break;
-    }
-    case MSG_SOCK_CONNECT:
-    {
-        TCPConnect(pMsg);
         break;
     }
     case MSG_SOCK_DISCONNECT:
     {
         TCPDisConnect(pMsg->socket);
-        break;
-    }
-    case MSG_SOCK_TCP_RECV:
-    {
-        ReceiveTCP(pMsg);
         break;
     }
     case MSG_SOCK_UDP_RECV:
@@ -331,23 +310,23 @@ void CService::RunMessage(CMsg* pMsg)
     case MSG_AUDIO_FINISH:
     {
         CAudioJob* p = (CAudioJob*)pMsg->pointer;
-        CService::GetInstance()->m_routeManager.AudioJobFinish(p);
+        g_SDKServer.m_routeManager.AudioJobFinish(p);
         pMsg->pointer = NULL;
         break;
     }
     case MSG_AUDIO_FINISH_PAUSE:
     {
         CAudioJob* p = (CAudioJob*)pMsg->pointer;
-        CService::GetInstance()->m_routeManager.AudioJobFinishPause(p);
+        g_SDKServer.m_routeManager.AudioJobFinishPause(p);
         pMsg->pointer = NULL;
         break;
     }
     case MSG_PLAY_INDEX:
     {
         m_routeManager.CurrentPlayIndex(pMsg->nInt1,pMsg->nInt2);
-        CSourceIndexResult ret;
-        ret.chProcess = pMsg->nInt1;
-        ret.nSourceIndex = pMsg->nInt2;
+        CPlayIndexResult ret;
+        ret.nRequest = pMsg->nInt1;
+        ret.nPlayIndex = pMsg->nInt2;
         ExcuteCallback(&ret);
         break;
     }
@@ -381,12 +360,12 @@ void CService::RunMessage(CMsg* pMsg)
     }
     case MSG_RESTORE_INPUT:
     {
-        CService::GetInstance()->m_routeManager.RestoreInput();
+        g_SDKServer.m_routeManager.RestoreInput();
         break;
     }
     case MSG_RESTORE_OUTPUT:
     {
-        CService::GetInstance()->m_routeManager.RestoreOutput();
+        g_SDKServer.m_routeManager.RestoreOutput();
         break;
     }
     case MSG_ALSA_INIT_FINISH:
@@ -409,11 +388,11 @@ void CService::RunMessage(CMsg* pMsg)
     }
     case MSG_AUDIO_CONTROL:
     {
-        CTSystem* pSys = CService::GetInstance()->GetD1System(pMsg->nInt1);
+        CTSystem* pSys = g_SDKServer.GetD1System(pMsg->nInt1);
         if(pSys != NULL)
         {
-            CMsgDevice msg(pSys);
-            msg.AudioControl(pMsg->device,pMsg->nInt2);
+            CMsgVolume msg(pSys);
+            //msg.AudioControl(pMsg->device,pMsg->nInt2);
         }
         break;
     }
@@ -424,6 +403,7 @@ void CService::RunMessage(CMsg* pMsg)
     }
     case MSG_VOL_REPLY:
     {
+        /*
         CTSystem* pSys = NULL;
         if(pMsg->nInt1==1)  //this is TCP
         {
@@ -435,12 +415,13 @@ void CService::RunMessage(CMsg* pMsg)
         }
         if(pSys != NULL && pSys->IsConnect())
         {
-            CMsgDevice msg(pSys);
+            CMsgVolume msg(pSys);
             msg.ReplyAudioControl(pMsg->volreply.device,
                                   pMsg->volreply.fVolume,
                                   pMsg->volreply.fMin,
                                   pMsg->volreply.fMax);
         }
+        */
         break;
     }
     case MSG_LAMP_TEST:
@@ -471,19 +452,6 @@ void CService::Push(std::shared_ptr<CMsg> pMsg)
 
     m_qMessage.push(pMsg);
     m_cv.notify_one();
-}
-
-bool CService::IsAudioJobOverRun(int &nRunningCount)
-{
-    nRunningCount = m_routeManager.GetCapturePlayAudio();
-    if(nRunningCount >= m_routeManager.m_nPlayingMaxCount)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
 }
 
 void CService::RemoteLevelmeter(CTSystem* pSys)
@@ -523,6 +491,7 @@ void CService::CheckLevelmeter()
 
 void CService::Every200MiniSecond()
 {
+    /*
     if (m_bExit || m_eMode == MODE_CONFIG)
     {
         return;
@@ -533,13 +502,14 @@ void CService::Every200MiniSecond()
     {
         t_Levelmeter &level = (*it).second;
         bool bCapture = (level.de.type == AS_TYPE_PR) ? true:false;
-        float fValue = PA::GetLevelmeter(bCapture,level.de.number+1);
+        float fValue = 0;// SDK_API::GetLevelmeter(bCapture, level.de.number + 1);
 
-        CMsgDevice msg(level.pSys);
+        CMsgVolume msg(level.pSys);
         msg.Levelmeter((*it).first,fValue);
 
         it++;
     }
+    */
 }
 
 void CService::EverySecond()
@@ -570,7 +540,7 @@ void CService::EverySecond()
     }
 
     //check route
-    CService::GetInstance()->m_routeManager.EverySecond();
+    g_SDKServer.m_routeManager.EverySecond();
 
     //check levelmeter
     CheckLevelmeter();
@@ -713,9 +683,9 @@ void CService::CheckLifeSignal(int nSeconds)
         if (m_vD1System[i]->IsInit() && !m_vD1System[i]->IsConnect())
             continue;
 
-        //30 seconds no sysstatus
-        m_vD1System[i]->m_nSysStatusSeconds += nSeconds;
-        if (m_vD1System[i]->m_nSysStatusSeconds >= 30)
+        //30 seconds no life signal
+        m_vD1System[i]->m_nNoLifeSignalSeconds += nSeconds;
+        if (m_vD1System[i]->m_nNoLifeSignalSeconds >= 30)
         {
             m_vD1System[i]->SetDisConnnect();
         }
@@ -726,7 +696,7 @@ void CService::SendBusyState()
 {
     if(m_pSelfSystem != NULL)
     {
-        CMsgUsageReport msg(m_pSelfSystem);
+        CMsgBusystate msg(m_pSelfSystem);
         //msg.SendLocalSourceUsageReport11();
         //msg.SendRemoteSourceUsageReport11();
     }
@@ -745,18 +715,11 @@ void CService::RecvLifeSignal(CTSystem* pSys,bool bLocalError)
 {
     if(m_bMonitorLifeSignal)
     {
-        CSysStateResult ret;
-        ret.nNode = pSys->m_Node.nNode;
-        ret.bErrorChange = false;
-        ret.IsError = bLocalError;
-        ExcuteCallback(&ret);
-    }
-
-    pSys->m_nSysStatusSeconds = 0;
-
-    if (!pSys->IsConnect())
-    {
-        pSys->SetConnect();
+        pSys->m_nNoLifeSignalSeconds = 0;
+        if (!pSys->IsConnect())
+        {
+            pSys->SetConnect();
+        }
     }
 }
 
@@ -770,6 +733,7 @@ CTSystem* CService::GetD1System(int nNode)
             return pSys;
         }
     }
+    assert(0);
     return NULL;
 }
 
@@ -801,11 +765,11 @@ CTSystem * CService::GetTCPD1SystemBySock(MYSOCK sock)
     return pSystem;
 }
 
-void CService::ExcuteCallback(const CResultBase *pResult)
+void CService::ExcuteCallback(const CResult *pResult)
 {
     if(!m_bExit)
     {
-        g_Callback(pResult);
+        //g_CallBack(pResult);
     }
 }
 
@@ -1011,7 +975,7 @@ void CService::PushRtpJob()
 
     auto pMsg = std::make_shared<CMsg>();
     pMsg->type = MSG_SEND_USAGE_REPORT;
-    CService::GetInstance()->Push(pMsg);
+    g_SDKServer.Push(pMsg);
 }
 
 void CService::PopRtpJob()
@@ -1021,7 +985,7 @@ void CService::PopRtpJob()
 
     auto pMsg = std::make_shared<CMsg>();
     pMsg->type = MSG_SEND_USAGE_REPORT;
-    CService::GetInstance()->Push(pMsg);
+    g_SDKServer.Push(pMsg);
 }
 
 CThreadDevice* CService::GetThreadDevice(bool bCapture, int nPort)
@@ -1091,7 +1055,7 @@ bool CService::IsStandAlone()
 void CService::LocalGongSignal(int chProcess,t_UsedPriority &used)
 {
     CPresignalResult ret;
-    ret.chProcess = chProcess;
+    //ret.nProcess = chProcess;
     ret.bPlaying = used.bUsed;
     ExcuteCallback(&ret);
 
@@ -1143,20 +1107,6 @@ void CService::SourceUsageUpdate(t_UsageReport &srcUsage)
         }
     }
     */
-}
-
-bool CService::IsGongPlaying(int nRtpChannel)
-{
-    auto iter = m_GongPlaying.begin();
-    for(;iter != m_GongPlaying.end();iter++)
-    {
-        t_UsedPriority &use = iter->second;
-        if(use.nRtpChannel == nRtpChannel)
-        {
-            return true;
-        }
-    }
-    return false;
 }
 
 void CService::MuteSpeaker(int nNode,bool bMute)

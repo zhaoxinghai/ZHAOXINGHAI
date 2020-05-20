@@ -7,46 +7,50 @@
 #include "msgcheckroute.h"
 #include "public.h"
 #include "common.h"
+#include "sdkconnect.h"
 
-CRoute::CRoute(CActivate *pA)
+CRoute::CRoute(CAnnouncement *pA)
 {
-    m_pData = &CService::GetInstance()->m_routeManager;
-    m_pActivate = NULL;
-    if (pA->type == ACTIVATE_NORMAL)
+    m_Activate.Property = pA->Property;
+
+    //some audio destinations
+    for (unsigned int i = 0; i < m_Activate.vDest.size(); i++)
     {
-        m_pActivate = new CActivate(pA);
-    }
-    else if (pA->type == ACTIVATE_MICR)
-    {
-        m_pActivate = new CActivateMicr((CActivateMicr*)pA);
-    }
-    else if (pA->type == ACTIVATE_PLAY)
-    {
-        m_pActivate = new CActivatePlay((CActivatePlay*)pA);
+        t_DestinationRoute dest(m_Activate.vDest[i]);
+        m_vDest.push_back(dest);
     }
     m_eType = ROUTE_NETWORK;
-    m_RouteResult.RetVal = 0;
-    m_RouteResult.chProcess = pA->chProcess;
+    m_RouteResult.nProcess = m_Activate.nProcess;
     m_RouteResult.e_ConState = CON_UNKNOW;
     m_bJobFinish = false;
 
     m_nCalltime = 0;
-    m_bPause = true;
-    m_bRtpOnly = false;
     m_bJobStarted = false;
-    m_nPort = -1;
-    m_nRtpChannel = 0;
-    m_nRtpNode = -1;
     m_lStartedTime = 0;
 }
 
 CRoute::~CRoute()
 {
-    if(m_pActivate)
-    {
-        delete m_pActivate;
-        m_pActivate = NULL;
-    }
+}
+
+void CRoute::OnActivate(int nNode, t_ActivateRet ret)
+{
+
+}
+
+void CRoute::OnDeActivate(int nNode, t_ActivateRet ret)
+{
+    assert(0);
+}
+
+void CRoute::OnInterrupt(int nNode, t_ActivateRet ret)
+{
+    assert(0);
+}
+
+void CRoute::OnReActivate(int nNode, t_ActivateRet ret)
+{
+    assert(0);
 }
 
 void CRoute::DeActivate()
@@ -57,24 +61,18 @@ void CRoute::DeActivate()
         {
             continue;
         }
-        CTSystem *pSystem = CService::GetInstance()->GetD1System(m_vDest[i].Sys);
-        if (pSystem == NULL || !pSystem->IsConnect())
+        CTSystem *pSystem = g_SDKServer.GetD1System(m_vDest[i].nNode);
+        if (pSystem == NULL)
         {
-            continue;
+            LOG_DEBUG("%d DeActivate Node %d", m_RouteResult.nProcess, m_vDest[i].nNode);
+
+            m_vDest[i].bRequest = true;
+            m_vDest[i].nRequestSeconds = 0;
+            m_vDest[i].eRequest = CON_DEACTIVATE;
+
+            CMsgConnection Connect(pSystem);
+            Connect.DeActivate(m_vDest[i].ret.nRequest, m_vDest[i].ret.nProcess);
         }
-
-        LOG_DEBUG("%d DeActivate Node %d",m_RouteResult.chProcess,m_vDest[i].Sys);
-
-        CDeActivate de;
-        de.chRequest = m_vDest[i].ret.chRequest;
-        de.chProcess = m_vDest[i].ret.chProcess;
-
-        m_vDest[i].bRequest = true;
-        m_vDest[i].nRequestSeconds = 0;
-        m_vDest[i].eRequest = CON_DEACTIVATE;
-
-        CMsgConnection Connect(pSystem);
-        Connect.DeActivate(&de);
     }
 }
 
@@ -82,7 +80,7 @@ void CRoute::Activate()
 {
     for (unsigned int i = 0; i < m_vDest.size(); i++)
     {
-        ActivateNode(m_vDest[i].Sys);
+        ActivateNode(m_vDest[i].nNode);
     }
 }
 
@@ -95,59 +93,49 @@ bool CRoute::UpdateJob(CONSTATE &conState)
             m_bJobStarted = true;
             m_lStartedTime = CCommon::GetSysTimeMicros();
         }
-        m_bPause = false;  //for timeout
+        //m_bPause = false;  //for timeout
 
-        CAudioJob* pJob = m_pData->GetAudio(m_RouteResult.chProcess);
+        CAudioJob* pJob = g_SDKServer.m_routeManager.GetAudio(m_RouteResult.nProcess);
         if(pJob == NULL)
         {
             return false;
         }
         if(!pJob->IsRunning()
                 && pJob->m_className!="CAudioReceive"
-                && m_pData->GetCapturePlayAudio()>=THREAD_POOL_COUNT)
+                && g_SDKServer.m_routeManager.GetCapturePlayAudio()>=THREAD_POOL_COUNT)
         {
-            LOG_DEBUG("%d thread pool is full.",m_RouteResult.chProcess);
-            m_pData->StopAudio(m_RouteResult.chProcess);
+            LOG_DEBUG("%d thread pool is full.",m_RouteResult.nProcess);
+            g_SDKServer.m_routeManager.StopAudio(m_RouteResult.nProcess);
             return false;
         }
         else
         {
-            m_pData->StartAudio(m_RouteResult.chProcess);
+            g_SDKServer.m_routeManager.StartAudio(m_RouteResult.nProcess);
         }
     }
     else if (conState == CON_DIS_CONNECT)
     {
-        m_pData->StopAudio(m_RouteResult.chProcess);
+        g_SDKServer.m_routeManager.StopAudio(m_RouteResult.nProcess);
     }
     else
     {
-        m_bPause = true;  //for timeout
-        m_pData->PauseAudio(m_RouteResult.chProcess);
+        g_SDKServer.m_routeManager.PauseAudio(m_RouteResult.nProcess);
     }
     return true;
 }
 
 bool CRoute::IsReconnect()
 {
-    if (IS_RECONNECT(m_pActivate->Flags))
+    if (IS_RECONNECT(m_Activate.Property.nFlags))
     {
         return true;
     }
     return false;
 }
 
-bool CRoute::IsReconnectRequest()
+bool CRoute::IsPartMode()
 {
-	if (IS_RECONNECT_REQUEST(m_pActivate->Flags))
-	{
-		return true;
-	}
-	return false;
-}
-
-bool CRoute::IsPartlyMode()
-{
-    if (IS_PARTIAL_CONNECTION(m_pActivate->Flags))
+    if (IS_PART_CONNECT(m_Activate.Property.nFlags))
     {
         return true;
     }
@@ -156,19 +144,16 @@ bool CRoute::IsPartlyMode()
 
 bool CRoute::IsFullMode()
 {
-    return !IsPartlyMode();
+    return !IsPartMode();
 }
 
 void CRoute::EverySecond()
 {
-    if (IsDisConnect())
-        return;
-
     //check timeout
-	if (m_pActivate->TimeOut > 0 )
+	if (m_Activate.Property.nTimeOut > 0 && m_bJobStarted)
 	{
 		m_nCalltime++;
-		if(m_nCalltime >= m_pActivate->TimeOut)
+		if(m_nCalltime >= m_Activate.Property.nTimeOut)
 		{
 			//2, do disconnect (timeout)
 			OnRouteState(CON_DIS_CONNECT);
@@ -176,50 +161,34 @@ void CRoute::EverySecond()
 		}
 	}
 
-    //try activate,reactivate and interrupt
+    //check activate route
     for (unsigned int i = 0; i < m_vDest.size(); i++)
     {
-        t_AudioDestRoute &dst = m_vDest[i];
-        if (dst.bRequest)
+        if (!m_vDest[i].bActivate)
         {
-            dst.nRequestSeconds++;
-            if (dst.nRequestSeconds >= 5)
-            {
-                //activate again
-                if (!dst.bActivate)
-                {
-                    ActivateNode(dst.Sys);
-                }
-                else if (dst.eRequest == CON_REACTIVATE)
-                {
-                    if(dst.ret.e_ConState==CON_FULL_CONNECT
-                            || dst.ret.e_ConState==CON_PARTLY_CONNECT)
-                    {
-                        dst.bRequest = false;
-                    }
-                    else
-                    {
-                        ReActivateNode(dst.Sys);
-                    }
-                }
-                else if(dst.eRequest == CON_INTERRUPT)
-                {
-                    if(dst.ret.e_ConState==CON_INTERRUPTED)
-                    {
-                        dst.bRequest = false;
-                    }
-                    else
-                    {
-                        InterruptNode(dst.Sys);
-                    }
-                }
-                else
-                {
-
-                }
-            }
+            continue;
+        }
+        m_vDest[i].nNoCheckSeconds++;
+        if (m_vDest[i].nNoCheckSeconds >= 30)
+        {
+            m_vDest[i].nNoCheckSeconds = 0;
+            m_vDest[i].bActivate = false;
+            t_ActivateRet ret = m_vDest[i].ret;
+            ret.e_ConState = CON_DIS_CONNECT;
+            OnRouteState(m_vDest[i].nNode, ret);
+            LOG_DEBUG("%d no check for 30 seconds", m_RouteResult.nProcess);
         }
     }
+}
+
+void CRoute::OnRouteState(int nNode, t_ActivateRet ret)
+{
+    assert(0);
+}
+
+void CRoute::OnRouteState(CONSTATE conState)
+{
+    assert(0);
 }
 
 bool CRoute::IsDisConnect()
@@ -232,17 +201,7 @@ bool CRoute::IsDisConnect()
 
 bool CRoute::IsRtpOnly()
 {
-    return m_bRtpOnly;
-}
-
-int CRoute::GetRtpNode()
-{
-    return m_nRtpNode;
-}
-
-int CRoute::GetRtpChannel()
-{
-    return m_nRtpChannel;
+    return m_Activate.Property.bAudioStream;
 }
 
 e_ROUTE_TYPE CRoute::GetType()
@@ -250,11 +209,11 @@ e_ROUTE_TYPE CRoute::GetType()
     return m_eType;
 }
 
-void CRoute::BeCheckRoute(unsigned short chRequest)
+void CRoute::BeCheckRoute(int nRequest)
 {
     for (unsigned int i = 0; i < m_vDest.size(); i++)
     {
-        if (m_vDest[i].ret.chRequest == chRequest)
+        if (m_vDest[i].ret.nRequest == nRequest)
         {
             m_vDest[i].nNoCheckSeconds = 0;
             break;
@@ -262,21 +221,22 @@ void CRoute::BeCheckRoute(unsigned short chRequest)
     }
 }
 
-t_AudioDestRoute* CRoute::GetDestination(int nNode)
+t_DestinationRoute* CRoute::GetDestination(int nNode)
 {
 	for (unsigned int i = 0; i < m_vDest.size(); i++)
 	{
-		if (m_vDest[i].Sys == nNode)
+		if (m_vDest[i].nNode == nNode)
 		{
 			return &m_vDest[i];
 		}
 	}
+    assert(0);
 	return NULL;
 }
 
-void CRoute::UpdateResult(int nNode, CActivateResult &ret, e_RESPONE response)
+void CRoute::UpdateResult(int nNode, t_ActivateRet ret, int response)
 {
-    e_REQUEST request = CON_ACTIVATE;
+    e_CONNECT_REQUEST request = CON_ACTIVATE;
     switch (response)
     {
     case CON_ON_ACTIVATE:
@@ -301,20 +261,13 @@ void CRoute::UpdateResult(int nNode, CActivateResult &ret, e_RESPONE response)
     
 	for (unsigned int i = 0; i < m_vDest.size(); i++)
 	{
-        if (m_vDest[i].Sys == nNode
-                && m_vDest[i].ret.chRequest == ret.chRequest)
+        if (m_vDest[i].nNode == nNode && m_vDest[i].ret.nRequest == ret.nRequest)
 		{
-            m_vDest[i].ret.chProcess = ret.chProcess;
-            m_vDest[i].ret.RetVal = ret.RetVal;
-            m_vDest[i].ret.e_ConState = ret.e_ConState;
-            m_vDest[i].ret.SrcIdx = ret.SrcIdx;
-            m_vDest[i].ret.LastSrcIdx = ret.LastSrcIdx;
+            m_vDest[i].ret = ret;
 			m_vDest[i].bActivate = true;
 
-            //stop request
-            if (nNode == m_vDest[i].Sys
-                && m_vDest[i].bRequest
-                && m_vDest[i].eRequest == request)
+            //stop this request
+            if (m_vDest[i].bRequest && m_vDest[i].eRequest == request)
             {
                 m_vDest[i].bRequest = false; 
             }
@@ -331,7 +284,7 @@ std::string CRoute::GetState(CONSTATE conState)
     }
 	else if (conState == CON_PARTLY_CONNECT)
     {
-        return "PART DEFECT";
+        return "PARTCON";
     }
 	else if (conState == CON_INTERRUPTED)
     {
@@ -349,160 +302,11 @@ std::string CRoute::GetState(CONSTATE conState)
     {
         return "CON_UNKNOW";
     }
-
-}
-
-std::string CRoute::GetPresignal(int nPre)
-{
-    if(nPre == 1)
-    {
-        return "SG 001.01";
-    }
-    else if(nPre == 2)
-    {
-        return "SG 001.02";
-    }
-    else if(nPre == 3)
-    {
-        return "SG 001.03";
-    }
-    else
-    {
-        return "";
-    }
-}
-
-void CRoute::GetSource(std::string &strPre,std::string &strSrc,bool bStart)
-{
-    /*
-    if(m_pActivate->nGongTitle == 1)
-    {
-        strPre = "SG 001.01";
-    }
-    else if(m_pActivate->nGongTitle == 2)
-    {
-        strPre = "SG 001.02";
-    }
-    else if(m_pActivate->nGongTitle == 3)
-    {
-        strPre = "SG 001.03";
-    }
-    if(m_eType == ROUTE_REMOTE)
-    {
-        if(m_nPort == 41)
-        {
-            strSrc = "PR 41.1";
-        }
-        else if(m_nPort == 42)
-        {
-            strSrc = "PR 41.2";
-        }
-        else
-        {
-            strSrc = CCommon::StrFormat("PR %d.0",m_nRtpChannel);
-        }
-    }
-    else if(m_eType == ROUTE_LOCAL)
-    {
-        if(m_nPort == 41)
-        {
-            strSrc = "PR 41.1";
-        }
-        else if(m_nPort == 42)
-        {
-            strSrc = "PR 41.2";
-        }
-        else
-        {
-            strSrc = CCommon::StrFormat("PR %d.0",m_nRtpChannel);
-        }
-    }
-    else
-    {
-        strPre = "";
-        strSrc = "";
-    }
-    if(strSrc.length()>0 && !bStart)
-    {
-        strSrc = CCommon::StrFormat("[%s]",strSrc.c_str());
-    }
-    */
-}
-
-void CRoute::GetDest(std::string szDest[])
-{
-    if(IsRtpOnly())
-    {
-        GetDestRtp(szDest);
-    }
-    else
-    {
-        GetDestNet(szDest);
-    }
-}
-
-void CRoute::GetDestRtp(std::string szDest[])
-{
-    CRouteRemote* p = (CRouteRemote*)this;
-    int index = 0;
-    for(unsigned int i = 0;i<p->m_vOutput.size();i++)
-    {
-        t_Output &output = p->m_vOutput[i];
-        if(index >= 5)
-            break;
-
-        if(output.nPort == 41)
-        {
-            if(output.bConnect)
-            {
-                szDest[index++] = "lo PA 041.01";
-            }
-            else
-            {
-                szDest[index++] = "[lo PA 041.01]";
-            }
-        }
-        else if(output.nPort == 42)
-        {
-            if(output.bConnect)
-            {
-                szDest[index++] = "lo PA 042.01";
-            }
-            else
-            {
-                szDest[index++] = "[lo PA 042.01]";
-            }
-        }
-    }
-}
-
-void CRoute::GetDestNet(std::string szDest[])
-{
-    for(unsigned int i =0;i<m_vDest.size();i++)
-    {
-        if(i >= 5)
-        {
-            break;
-        }
-        std::string str;
-        t_AudioDestRoute &dst = m_vDest[i];
-
-        if(dst.bActivate)
-        {
-            str = CCommon::StrFormat("%d %s",dst.Sys,
-                    CRoute::GetState(dst.ret.e_ConState).c_str());
-        }
-        else
-        {
-            str = CCommon::StrFormat("%d ---",dst.Sys);
-        }
-        szDest[i] = CCommon::StrFormat("%-17s",str.c_str());
-    }
 }
 
 void CRoute::ActivateNode(int nNode)
 {
-    t_AudioDestRoute* pDest = GetDestination(nNode);
+    t_DestinationRoute* pDest = GetDestination(nNode);
     if(pDest == NULL || pDest->bDeActivate || pDest->bActivate)
     {
         return;
@@ -516,105 +320,18 @@ void CRoute::ActivateNode(int nNode)
 		LOG_DEBUG("%s","ActivateNode vOutputPort is empty");
         return;
     }
-    CTSystem *pSystem = CService::GetInstance()->GetD1System(nNode);
-    if (pSystem == NULL || !pSystem->IsConnect())
+    CTSystem *pSystem = g_SDKServer.GetD1System(nNode);
+    if (pSystem)
     {
-        return;
+        CAnnouncement act = m_Activate;
+        act.vDest.clear();
+        act.vDest.push_back(*pDest);
+
+        pDest->ret.nRequest = CPublic::GetChRequest();
+      
+        CMsgConnection Connect(pSystem);
+        Connect.Activate(act);
+
+        LOG_DEBUG("%d Activate Node %d", m_RouteResult.nProcess, nNode);
     }
-
-    m_pActivate->vDest.clear();
-    m_pActivate->vDest.push_back(*pDest);
-    pDest->ret.chRequest = CPublic::GetChRequest();
-    m_pActivate->chRequest = pDest->ret.chRequest;
-
-    CMsgConnection Connect(pSystem);
-    Connect.Activate(m_pActivate);
-
-    LOG_DEBUG("%d Activate Node %d",m_RouteResult.chProcess,nNode);
-}
-
-void CRoute::InterruptNode(int nNode)
-{
-    t_AudioDestRoute* pDest = GetDestination(nNode);
-    if (pDest==NULL || !pDest->bActivate || pDest->bDeActivate)
-    {
-        return;
-    }
-    pDest->bRequest = true;
-    pDest->nRequestSeconds = 0;
-    pDest->eRequest = CON_INTERRUPT;
-
-    CTSystem *pSystem = CService::GetInstance()->GetD1System(nNode);
-    if (pSystem == NULL || !pSystem->IsConnect())
-    {
-        return;
-    }
-
-    CDeActivate in;
-    in.chRequest = pDest->ret.chRequest;
-    in.chProcess = pDest->ret.chProcess;
-    CMsgConnection Connect(pSystem);
-    Connect.Interrupt(&in);
-
-    LOG_DEBUG("%d Interrupt Node %d",m_RouteResult.chProcess,nNode);
-}
-
-void CRoute::DeActivateNode(int nNode)
-{
-    t_AudioDestRoute* pDest = GetDestination(nNode);
-    if (pDest==NULL || !pDest->bActivate || pDest->bDeActivate)
-    {
-        return;
-    }
-    pDest->bDeActivate = true;
-    if (pDest->ret.e_ConState == CON_DIS_CONNECT)
-    {
-        return;
-    }
-    pDest->ret.e_ConState = CON_DIS_CONNECT;
-    pDest->bRequest = true;
-    pDest->nRequestSeconds = 0;
-    pDest->eRequest = CON_DEACTIVATE;
-
-    CTSystem *pSystem = CService::GetInstance()->GetD1System(nNode);
-    if (pSystem == NULL)
-    {
-        return;
-    }
-
-    CDeActivate de;
-    de.chRequest = pDest->ret.chRequest;
-    de.chProcess = pDest->ret.chProcess;
-    CMsgConnection Connect(pSystem);
-    Connect.DeActivate(&de);
-
-    LOG_DEBUG("%d DeActivate Node %d",m_RouteResult.chProcess,nNode);
-}
-
-void CRoute::ReActivateNode(int nNode)
-{
-    t_AudioDestRoute* pDest = GetDestination(nNode);
-    if(pDest==NULL || !pDest->bActivate || pDest->bDeActivate)
-    {
-        return;
-    }
-    pDest->bRequest = true;
-    pDest->nRequestSeconds = 0;
-    pDest->eRequest = CON_REACTIVATE;
-
-    CTSystem *pSystem = CService::GetInstance()->GetD1System(nNode);
-    if (pSystem == NULL || !pSystem->IsConnect())
-    {
-        return;
-    }
-    CActivateMicr* pA = (CActivateMicr*)m_pActivate;
-    CReActivate re;
-    re.chRequest = pDest->ret.chRequest;
-    re.chProcess = pDest->ret.chProcess;
-    re.nRtpNode = pA->nRtpNode;
-    re.nRtpChannel = pA->nRtpChannel;
-    CMsgConnection Connect(pSystem);
-    Connect.ReActivate(&re);
-
-    LOG_DEBUG("%d ReActivate Node %d",m_RouteResult.chProcess,nNode);
 }

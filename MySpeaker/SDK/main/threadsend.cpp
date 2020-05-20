@@ -6,10 +6,16 @@
 
 CThreadSend::CThreadSend()
 {
+    m_nPort = 5966;
 }
 
 CThreadSend::~CThreadSend()
 {
+}
+
+void CThreadSend::SetPort(int nPort)
+{
+   m_nPort = nPort;
 }
 
 void CThreadSend::Run()
@@ -35,7 +41,7 @@ void CThreadSend::Run()
     //thread run
     auto pMsg = std::make_shared<CMsg>();
     pMsg->type = MSG_SEND_THREAD_RUN;
-    CService::GetInstance()->Push(pMsg);
+    g_SDKServer.Push(pMsg);
 
     while (m_bActive)
     {
@@ -81,7 +87,7 @@ void CThreadSend::RunMessage(t_SendMsg * pMsg)
 
 void CThreadSend::SendMsg(std::shared_ptr<t_SendMsg> pMsg)
 {
-    if(CService::GetInstance()->IsExit())
+    if(g_SDKServer.IsExit())
         return;
 
     std::unique_lock < std::mutex > lck(m_mutex);
@@ -118,7 +124,7 @@ bool CThreadSend::SendTo(MYSOCK sock,const char* ip, const char* buf, int len)
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = inet_addr(ip);
-    addr.sin_port = htons(1120);
+    addr.sin_port = htons(m_nPort);
   
     int ret = sendto(sock, buf, len, 0,(sockaddr*)&addr, sizeof(addr));
     if (ret != len)
@@ -134,7 +140,7 @@ bool CThreadSend::SendBroadcast(const char* buf, int len)
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
-    addr.sin_port = htons(1120);
+    addr.sin_port = htons(m_nPort);
 
     int ret = sendto(m_sockBroadcast.GetSocket(), buf, len, 0, (sockaddr*)&addr, sizeof(addr));
     if (ret != len)
@@ -150,7 +156,7 @@ bool CThreadSend::SendMulticast(const char* ip, const char* buf, int len)
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = inet_addr(ip);
-    addr.sin_port = htons(1120);
+    addr.sin_port = htons(m_nPort);
 
     int ret = sendto(m_sockBroadcast.GetSocket(), buf, len, 0, (sockaddr*)&addr, sizeof(addr));
     if (ret != len)

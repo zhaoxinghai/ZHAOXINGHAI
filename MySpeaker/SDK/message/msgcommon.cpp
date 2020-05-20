@@ -2,7 +2,7 @@
 #include "msgbase.h"
 #include "msgcommon.h"
 #include "common.h"
-#include "callback.h"
+#include "sdkcallback.h"
 #include "sdk.h"
 #include "service.h"
 #include "routemanager.h"
@@ -86,7 +86,7 @@ void CMsgCommon::OnVersion10(unsigned char* /*pBuf*/, const int /*len*/)
     ver.nProtVerAct = ProtVerAct;
     ver.nPortVerMax = ProtVerMax;
 
-    CService::GetInstance()->ExcuteCallback(&ver);
+    g_SDKServer.ExcuteCallback(&ver);
     */
 }
 
@@ -125,7 +125,7 @@ void CMsgCommon::OnVersion11(unsigned char* /*pBuf*/, const int /*len*/)
     ver.nProtVerAct = ProtVerAct;
     ver.nPortVerMax = ProtVerMax;
 
-    CService::GetInstance()->ExcuteCallback(&ver);
+    g_SDKServer.ExcuteCallback(&ver);
     */
 }
 
@@ -155,7 +155,7 @@ void CMsgCommon::OnLogin(unsigned char* /*pBuf*/, const int /*len*/)
     m_vBuffer.push_back(1);
 
     //SysNameLen	byte	0 to 40	length of the system name std::string
-    CTSystem* pSys = CService::GetInstance()->GetSelfD1System();
+    CTSystem* pSys = g_SDKServer.GetSelfD1System();
     m_vBuffer.push_back((unsigned char)pSys->m_Node.strName.length());
 
     //SysName	array[]	system name
@@ -180,6 +180,7 @@ void CMsgCommon::OnLogin(unsigned char* /*pBuf*/, const int /*len*/)
 
 void CMsgCommon::OnTransportLine(unsigned char* pBuf, const int /*len*/)
 {
+    /*
     //m_Mid = PAMSG_MID_CTRLTL;
     
     unsigned char* p = pBuf;
@@ -206,17 +207,18 @@ void CMsgCommon::OnTransportLine(unsigned char* pBuf, const int /*len*/)
 
         tl.nNum = ReadLONG(p);
 
-        if (tl.nNode == CService::GetInstance()->GetNode())
+        if (tl.nNode == g_SDKServer.GetNode())
         {
             ret.vTL.push_back(tl);
         }
     }
 
-    CService::GetInstance()->ExcuteCallback(&ret);
+    g_SDKServer.ExcuteCallback(&ret);*/
 }
 
 void CMsgCommon::TransportLine(bool bAction, std::vector<t_TL>& vTL)
 {
+    /*
     //m_Mid = PAMSG_MID_CTRLTL;
 
     //subMid
@@ -234,11 +236,12 @@ void CMsgCommon::TransportLine(bool bAction, std::vector<t_TL>& vTL)
         m_vBuffer.push_back(vTL[i].nType);
         WriteLONG(vTL[i].nNum);
     }
-    m_pSystem->OnSend(this);
+    m_pSystem->OnSend(this);*/
 }
 
 void CMsgCommon::OnTextIn(unsigned char* pBuf, const int len)
 {
+    /*
     int nLen = pBuf[0];
     CTextInResult ret;
     ret.tcpSocket = m_pSystem->m_sock;
@@ -246,7 +249,7 @@ void CMsgCommon::OnTextIn(unsigned char* pBuf, const int len)
 
     if(nLen == 0)
     {
-        CService::GetInstance()->ExcuteCallback(&ret);
+        g_SDKServer.ExcuteCallback(&ret);
     }
     else if(nLen<400)
     {
@@ -255,12 +258,13 @@ void CMsgCommon::OnTextIn(unsigned char* pBuf, const int len)
         sysdata[nLen] = '\0';
         std::string str(sysdata);
         ret.strCmd = str;
-        CService::GetInstance()->ExcuteCallback(&ret);
-    }
+        g_SDKServer.ExcuteCallback(&ret);
+    }*/
 }
 
 void CMsgCommon::TextOutput(std::string strResult)
 {
+    /*
     //m_Mid = PAMSG_MID_TEXTOUT;
     m_vBuffer.clear();
 
@@ -275,11 +279,12 @@ void CMsgCommon::TextOutput(std::string strResult)
     {
         m_vBuffer.push_back(strResult[i]);
     }
-    m_pSystem->OnSend(this);
+    m_pSystem->OnSend(this);*/
 }
 
 void CMsgCommon::SpecialFunction(unsigned short number,bool bActivate)
 {
+    /*
     //m_Mid = PAMSG_MID_SPECIAL;
     m_vBuffer.clear();
 
@@ -303,6 +308,7 @@ void CMsgCommon::SpecialFunction(unsigned short number,bool bActivate)
     }
 
     m_pSystem->m_pTransport->SendBroadcast(this,true);
+    */
 }
 
 void CMsgCommon::OnSpecialFunction(unsigned char* pBuf,const int len)

@@ -2,9 +2,9 @@
 #ifndef RECVMSG_H
 #define RECVMSG_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "mythread.h"
-#include "d1system.h"
+#include "topsystem.h"
 
 class CThreadRecv: public CMyThread
 {
@@ -32,6 +32,7 @@ public:
 
     void EnableMulticast(){m_bMulticast = true;};
     void SetMulticastAddress(std::string strAddr);
+    void SetUDPPort(int nPort);
 
 protected:
 
@@ -49,7 +50,8 @@ protected:
     CMySocket          m_Sock;
     bool               m_bTCP;
     bool               m_bMulticast;
-    std::string             m_strMulticast;
+    std::string        m_strMulticast;
+    int                m_nPort;
 };
 
 #endif

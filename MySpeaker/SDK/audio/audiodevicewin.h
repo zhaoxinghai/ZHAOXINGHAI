@@ -3,7 +3,7 @@
 #ifndef AUDIO_MSC_VER_H
 #define AUDIO_MSC_VER_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include <Audioclient.h>
 #include <mmdeviceapi.h>
 #include "audiodevice.h"

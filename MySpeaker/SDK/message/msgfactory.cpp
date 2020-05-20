@@ -15,21 +15,29 @@ std::shared_ptr<CMsgBase> CMsgFactory::CreateMsgClass(unsigned char cMid, unsign
         break;
 
     case PAMSG_MID_BUSY_STATE:
-        Msg = std::make_shared<CMsgUsageReport>(pSystem);
+        Msg = std::make_shared<CMsgBusystate>(pSystem);
         break;
 
     case PAMSG_MID_CONNECT:
-        Msg = std::make_shared<CMsgConnection>(pSystem);
+    {
+        if (sMid > 1000)
+        {
+            Msg = std::make_shared<CMsgConnection>(pSystem);
+        }
+        else
+        {
+            Msg = std::make_shared<CMsgConnectRequest>(pSystem);
+        }
+        break;
+    }
+    case PAMSG_MID_TIMESYNC:
+        Msg = std::make_shared<CMsgSyncTime>(pSystem);
         break;
 
-    //case PAMSG_MID_SETRTC:
-        //Msg = std::make_shared<CMsgSyncTime>(pSystem);
-        //break;
+    case PAMSG_MID_VOLUME:
+        Msg = std::make_shared<CMsgVolume>(pSystem);
+        break;
 
-    //case PAMSG_MID_DEVICE:
-    //case PAMSG_MID_DEVICE2:
-        //Msg = std::make_shared<CMsgDevice>(pSystem);
-        //break;
     default:
         Msg = std::make_shared<CMsgCommon>(pSystem);
     }

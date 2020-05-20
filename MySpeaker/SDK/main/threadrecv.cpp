@@ -9,6 +9,7 @@ CThreadRecv::CThreadRecv(bool bTCP)
 	m_maxSock = 0;
     m_bTCP = bTCP;
     m_bMulticast = false;
+    m_nPort = 5966;
 }
 
 CThreadRecv::~CThreadRecv()
@@ -148,7 +149,7 @@ void CThreadRecv::RunUDP()
         return;
     }
 
-    if (!m_Sock.Bind(1120))
+    if (!m_Sock.Bind(m_nPort))
     {
         LOG_ERROR("%s", "sock.Bind");
         return;
@@ -170,6 +171,11 @@ void CThreadRecv::SetMulticastAddress(std::string strAddr)
     m_strMulticast = strAddr; 
 }
 
+void CThreadRecv::SetUDPPort(int nPort)
+{
+    m_nPort = nPort;
+}
+
 void CThreadRecv::RunUDPMulticast()
 {
     if (!m_Sock.Create(SOCK_DGRAM))
@@ -184,7 +190,7 @@ void CThreadRecv::RunUDPMulticast()
         return;
     }
 
-    if (!m_Sock.SetUDPAddress(m_strMulticast.c_str(), 1120))
+    if (!m_Sock.SetUDPAddress(m_strMulticast.c_str(), m_nPort))
     {
         LOG_ERROR("%s","RunUDPMulticast m_Sock.SetUDPAddress");
         return;
@@ -196,8 +202,8 @@ void CThreadRecv::RunUDPMulticast()
         return;
     }
 
-    //bind port 1120
-    if (!m_Sock.Bind(1120))
+    //bind port
+    if (!m_Sock.Bind(m_nPort))
     {
         LOG_ERROR("%s", "RunUDP m_Sock.Bind");
         return;
@@ -238,7 +244,7 @@ int CThreadRecv::UDPReceive(MYSOCK sock)
 
         strncpy(p->szIP, inet_ntoa(from.sin_addr),sizeof(p->szIP)-1);
         p->nInt1 = iRead;
-        CService::GetInstance()->Push(pMsg);
+        g_SDKServer.Push(pMsg);
     }
     return iRead;
 }
@@ -256,6 +262,7 @@ void CThreadRecv::TCPReceive()
 
 void CThreadRecv::TCPReceive(MYSOCK sock)
 {
+    /*
     auto pMsg = std::make_shared<CMsg>();
     pMsg->socket = sock;
     int iRead = recv(sock, pMsg.get()->szbuffer, PACKET_BUFLEN, 0);
@@ -264,13 +271,14 @@ void CThreadRecv::TCPReceive(MYSOCK sock)
     {
         pMsg->type = MSG_SOCK_TCP_RECV;
         pMsg->nInt1 = iRead;
-        CService::GetInstance()->Push(pMsg);
+        g_SDKServer.Push(pMsg);
     }
     else
     {
         RemoveSocket(sock);
         pMsg->type = MSG_SOCK_DISCONNECT;
-        CService::GetInstance()->Push(pMsg);
+        g_SDKServer.Push(pMsg);
     }
+    */
 }
 

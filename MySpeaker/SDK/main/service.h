@@ -2,10 +2,11 @@
 #ifndef SERVICE_H
 #define SERVICE_H
 
-#include "predefine.h"
-#include "connection.h"
+#include "sdkdefine.h"
+#include "sdk.h"
+#include "sdkconnect.h"
 #include "mythread.h"
-#include "d1system.h"
+#include "topsystem.h"
 #include "threadrecv.h"
 #include "threadsend.h"
 #include "threadaccept.h"
@@ -21,29 +22,21 @@
 struct t_Levelmeter
 {
     CTSystem  *pSys;
-    int         nCounter;
-    t_VDevice   de;
+    int        nCounter;
+    bool       bCapture;
+    int        nPort;
 };
 
 class CThreadCapture;
 class CThreadPlay;
 class CService: public CMyThread
 {
-    CService();
-
 public:
-
+    CService();
     ~CService();
-
-    static CService *inst;
-    static CService* GetInstance();
-    static void Release();
 
     //main thread message run
     virtual void Run();
-    std::shared_ptr<CMsg> GetMsg();
-
-    bool IsAudioJobOverRun(int &nRunningCount);
 
     //init dom's node
     bool Init(t_Node &curNode,std::vector<t_Node> &vSystem);
@@ -79,7 +72,7 @@ public:
     CTSystem* GetTCPD1SystemBySock(MYSOCK sock);
 
     //callback to client
-    void ExcuteCallback(const CResultBase *pResult);
+    void ExcuteCallback(const CResult *pResult);
 
     //socket callback
     void TCPConnect(CMsg* pMsg);
@@ -130,8 +123,6 @@ public:
     //is standalone
     bool IsStandAlone();
 
-    bool IsGongPlaying(int nRtpChannel);
-
     //Usage report
     t_UsageReport* GetSourceUsage(int nRTPNode,int nRTPChannel);
     void SourceUsageUpdate(t_UsageReport &srcUsage);
@@ -147,6 +138,7 @@ public:
 
     //multicast base address
     int         m_nBaseAddress;
+    int         m_nBasePort;
 
     //some switchs
     bool        m_bMonitorLifeSignal;
@@ -155,6 +147,8 @@ public:
     bool        m_bEnableSecurity;
 
 protected:
+    //loop the message
+    std::shared_ptr<CMsg> GetMsg();
 
     //if we want to receive request,and detect by service,do this
     void SendLifeSignal();
@@ -220,9 +214,10 @@ protected:
     //main message
     std::queue<std::shared_ptr<CMsg>>  m_qMessage;
     bool                     m_bIntercom;
-
-
 };
+
+extern CService    g_SDKServer;
+extern SDKCallback g_CallBack;
 
 #endif
 

@@ -1,5 +1,5 @@
 
-#include "route.h"
+#include "routeremote.h"
 #include "service.h"
 #include "routemanager.h"
 #include "msgconnection.h"
@@ -11,13 +11,14 @@
 #include "audioreceive.h"
 #include "common.h"
 
-CRouteRemote::CRouteRemote(int nNode,CActivate* pA):CRouteLocal(pA)
+CRouteRemote::CRouteRemote(int nNode,CAnnouncement* pA)
+    :CRouteLocal(pA)
 {
     m_eType = ROUTE_REMOTE;
-    m_pSystem = CService::GetInstance()->GetD1System(nNode);
+    m_pSystem = g_SDKServer.GetD1System(nNode);
     m_nCheckTimes = 0;
     m_nTimerCount10 = 0;
-    m_RouteResult.chRequest = pA->chRequest;
+    m_RouteResult.nRequest = pA->nRequest;
     m_eRespone = CON_ON_ROUTESTATE;
     m_bBeInterrupt = false;
 }
@@ -28,22 +29,20 @@ CRouteRemote::~CRouteRemote()
 
 void CRouteRemote::BeActivate()
 {
-	if (IsRtpActivate())
+	if (m_Activate.Property.bAudioStream)
 	{
         LOG_DEBUG("%d RTP BeActivate request %d,node(%d)",
-                  m_RouteResult.chProcess,m_RouteResult.chRequest,m_pSystem->m_Node.nNode);
+                  m_RouteResult.nProcess,m_RouteResult.nRequest,m_pSystem->m_Node.nNode);
 
         m_eRespone = CON_ON_ACTIVATE;
-        m_bRtpOnly = true;
 		BeActivateRtp();
 	}
 	else
 	{
         LOG_DEBUG("%d Remote BeActivate request %d,node(%d)",
-                  m_RouteResult.chProcess,m_RouteResult.chRequest,m_pSystem->m_Node.nNode);
+                  m_RouteResult.nProcess,m_RouteResult.nRequest,m_pSystem->m_Node.nNode);
 
         m_eRespone = CON_ON_ACTIVATE;
-        m_bRtpOnly = false;
 		BeActivateLocal();
 	}
 }
@@ -51,26 +50,26 @@ void CRouteRemote::BeActivate()
 void CRouteRemote::BeDeActivate()
 {
     m_eRespone = CON_ON_DEACTIVATE;
-    if(m_bRtpOnly)
+    if(m_Activate.Property.bAudioStream)
     {
-        LOG_DEBUG("%d RTP BeDeActivate, request %d",m_RouteResult.chProcess,m_RouteResult.chRequest);
+        LOG_DEBUG("%d RTP BeDeActivate, request %d",m_RouteResult.nProcess,m_RouteResult.nRequest);
     }
     else
     {
-        LOG_DEBUG("%d Remote BeDeActivate, request %d",m_RouteResult.chProcess,m_RouteResult.chRequest);
+        LOG_DEBUG("%d Remote BeDeActivate, request %d",m_RouteResult.nProcess,m_RouteResult.nRequest);
         CRoute::DeActivate();
     }
 }
 
 void CRouteRemote::BeInterrupt()
 {
-    if(m_bRtpOnly)
+    if(m_Activate.Property.bAudioStream)
     {
-        LOG_DEBUG("%d RTP BeInterrupt, request %d",m_RouteResult.chProcess,m_RouteResult.chRequest);
+        LOG_DEBUG("%d RTP BeInterrupt, request %d",m_RouteResult.nProcess,m_RouteResult.nRequest);
     }
     else
     {
-        LOG_DEBUG("%d Remote BeInterrupt, request %d",m_RouteResult.chProcess,m_RouteResult.chRequest);
+        LOG_DEBUG("%d Remote BeInterrupt, request %d",m_RouteResult.nProcess,m_RouteResult.nRequest);
     }
     m_bBeInterrupt = true;
     m_eRespone = CON_ON_INTERRUPT;
@@ -79,16 +78,16 @@ void CRouteRemote::BeInterrupt()
 
     if(bFree)
     {
-        CService::GetInstance()->SendBusyState();
+        g_SDKServer.SendBusyState();
     }
 }
 
-void CRouteRemote::BeReActivate(t_AudioSrc &/*src*/)
+void CRouteRemote::BeReActivate()
 {
     m_bBeInterrupt = false;
-    if(m_bRtpOnly)
+    if(m_Activate.Property.bAudioStream)
     {
-        LOG_DEBUG("%d RTP BeReActivate, request %d",m_RouteResult.chProcess,m_RouteResult.chRequest);
+        LOG_DEBUG("%d RTP BeReActivate, request %d",m_RouteResult.nProcess,m_RouteResult.nRequest);
         m_eRespone = CON_ON_REACTIVATE;
 
         if(m_RouteResult.e_ConState == CON_INTERRUPTED
@@ -99,55 +98,39 @@ void CRouteRemote::BeReActivate(t_AudioSrc &/*src*/)
         else
         {
             CMsgConnectRequest request(m_pSystem);
-            request.RouteStatus(m_RouteResult, m_eRespone);
+            request.SendRouteStatus(m_RouteResult, m_eRespone);
         }
     }
     else
     {
-        LOG_DEBUG("%d Remote BeReActivate, request %d",m_RouteResult.chProcess,m_RouteResult.chRequest);
+        LOG_DEBUG("%d Remote BeReActivate, request %d",m_RouteResult.nProcess,m_RouteResult.nRequest);
     }
 }
 
 void CRouteRemote::BeRouteStatus()
 {
-    if(m_bRtpOnly)
+    if(m_Activate.Property.bAudioStream)
     {
-        LOG_DEBUG("%d RTP BeRouteState, request %d",m_RouteResult.chProcess,m_RouteResult.chRequest);
+        LOG_DEBUG("%d RTP BeRouteState, request %d",m_RouteResult.nProcess,m_RouteResult.nRequest);
     }
     else
     {
-        LOG_DEBUG("%d Remote BeRouteState, request %d",m_RouteResult.chProcess,m_RouteResult.chRequest);
+        LOG_DEBUG("%d Remote BeRouteState, request %d",m_RouteResult.nProcess,m_RouteResult.nRequest);
     }
     m_eRespone = CON_ON_ROUTESTATE;
     CMsgConnectRequest request(m_pSystem);
-    request.RouteStatus(m_RouteResult, CON_ON_ROUTESTATE);
-}
-
-bool CRouteRemote::IsRtpActivate()
-{
-	t_AudioSrc &src = m_pActivate->vSrc[0];
-
-    if (src.Type == AS_TYPE_AN)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    request.SendRouteStatus(m_RouteResult, m_eRespone);
 }
 
 int CRouteRemote::GetPhysicalPort()
 {
-    auto it = m_pActivate->vSrc.begin();
-    while(it != m_pActivate->vSrc.end())
+    auto it = m_Activate.vSrc.begin();
+    while(it != m_Activate.vSrc.end())
     {
-        t_AudioSrc &src = (*it);
-        int num = src.Num + 1;
-        if (CService::GetInstance()->IsInput(num))
+        t_Source &src = (*it);
+        if(src.eType == SOURCE_MIC)
         {
-            m_pActivate->vSrc.erase(it);
-            return num;
+            return src.nNumber;
         }
         it++;
     }
@@ -158,7 +141,7 @@ bool CRouteRemote::IsOutputExist(std::vector<int> &vOutput)
 {
 	for(unsigned int i = 0;i<vOutput.size();i++)
 	{
-		if(!CService::GetInstance()->IsOutput(vOutput[i]))
+		if(!g_SDKServer.IsOutput(vOutput[i]))
 		{
 			return false;
 		}
@@ -168,18 +151,12 @@ bool CRouteRemote::IsOutputExist(std::vector<int> &vOutput)
 
 void CRouteRemote::BeActivateLocal()
 {
-    SET_RECONNECT_REQUEST(m_pActivate->Flags);
-
-	int nPort = GetPhysicalPort();
-
-	if (nPort != -1)
+	if (m_Activate.Property.nPort > 0)
 	{
-		m_nPort = nPort;
 		BeActivatePhysical();
 	}
 	else
 	{
-		m_nPort = -1;
 		BeActivateVirtual();
 	}
 }
@@ -187,7 +164,7 @@ void CRouteRemote::BeActivateLocal()
 void CRouteRemote::BeActivateRtp()
 {
     //only one destination
-    if (m_vDest.size() == 1 && m_vDest[0].Sys == CService::GetInstance()->GetNode())
+    if (m_vDest.size() == 1 && m_vDest[0].nNode == g_SDKServer.GetNode())
     {
         //check the port
         if (m_vDest[0].vOutputPort.size() == 0
@@ -197,7 +174,7 @@ void CRouteRemote::BeActivateRtp()
             LOG_ERROR("RTP BeActivate:%s", "Output Port Error");
             CMsgConnectRequest request(m_pSystem);
             m_RouteResult.e_ConState = CON_DIS_CONNECT;
-            request.RouteStatus(m_RouteResult, m_eRespone);
+            request.SendRouteStatus(m_RouteResult, m_eRespone);
             return;
         }
         GetOutput(m_vDest[0].vOutputPort);
@@ -209,7 +186,7 @@ void CRouteRemote::BeActivateRtp()
         LOG_ERROR("RTP BeActivate:%s", "Only support one destination");
         CMsgConnectRequest request(m_pSystem);
         m_RouteResult.e_ConState = CON_DIS_CONNECT;
-        request.RouteStatus(m_RouteResult, m_eRespone);
+        request.SendRouteStatus(m_RouteResult, m_eRespone);
     }
 }
 
@@ -226,19 +203,16 @@ void CRouteRemote::GetOutput(std::vector<int> &vOutput)
 
 bool CRouteRemote::CreateAudioJob()
 {
-    if (m_bRtpOnly)
+    if (m_Activate.Property.bAudioStream)
     {
-        CService* pSer = CService::GetInstance();
         CAudioReceive *pJob = new CAudioReceive();  //checked
 
-        pJob->SetChProcess(m_RouteResult.chProcess);
+        pJob->SetChProcess(m_RouteResult.nProcess);
 
-        pJob->SetRtpNode(m_pActivate->vSrc[0].Num);
-        pJob->SetRtpChannel(m_pActivate->vSrc[0].Title);
+        pJob->SetRtpNode(m_Activate.Property.nAudioNode);
+        pJob->SetRtpChannel(m_Activate.Property.nAudioChannal);
 
-        m_nRtpNode = pJob->GetRtpNode();
-        m_nRtpChannel = pJob->GetRtpChannel();
-        m_pData->AddAudio(pJob);
+        g_SDKServer.m_routeManager.AddAudio(pJob);
         return true;
     }
     else
@@ -259,9 +233,9 @@ void CRouteRemote::OnRouteState(CONSTATE conState)
             OnRouteState(CON_DIS_CONNECT);
             return;
         }
-        if(m_bRtpOnly)
+        if(m_Activate.Property.bAudioStream)
         {
-            LOG_DEBUG("%d RTP OnRouteState: %s",m_RouteResult.chProcess,
+            LOG_DEBUG("%d RTP OnRouteState: %s",m_RouteResult.nProcess,
                   GetState(m_RouteResult.e_ConState).c_str());
 
             if (m_RouteResult.e_ConState == CON_DIS_CONNECT)
@@ -271,27 +245,27 @@ void CRouteRemote::OnRouteState(CONSTATE conState)
         }
         else
         {
-            LOG_DEBUG("%d Remote OnRouteState: %s",m_RouteResult.chProcess,
+            LOG_DEBUG("%d Remote OnRouteState: %s",m_RouteResult.nProcess,
                       GetState(m_RouteResult.e_ConState).c_str());
         }
 
         //respond result to remote
         CMsgConnectRequest request(m_pSystem);
-        request.RouteStatus(m_RouteResult, m_eRespone);
+        request.SendRouteStatus(m_RouteResult, m_eRespone);
     }
     else
     {
-        if(m_bRtpOnly)
+        if(m_Activate.Property.bAudioStream)
         {
             //fro RTP job, always send the route state
             CMsgConnectRequest request(m_pSystem);
-            request.RouteStatus(m_RouteResult, m_eRespone);
+            request.SendRouteStatus(m_RouteResult, m_eRespone);
         }
     }
 
     if (ResetInput(conState) || bFree)
     {
-        CService::GetInstance()->SendBusyState();
+        g_SDKServer.SendBusyState();
     }
 }
 
@@ -312,11 +286,11 @@ void CRouteRemote::EverySecond()
         {
             //submid:0x09
             CMsgCheckRoute check(m_pSystem);
-            check.Check(m_RouteResult.chRequest, m_RouteResult.chProcess);
+            check.Check(m_RouteResult.nRequest, m_RouteResult.nProcess);
         }
         else
         {
-            LOG_DEBUG("%d no check feedback for 30 seconds", m_RouteResult.chProcess);
+            LOG_DEBUG("%d no check feedback for 30 seconds", m_RouteResult.nProcess);
             DeActivate();
             OnRouteState(CON_DIS_CONNECT);
         }
@@ -336,9 +310,9 @@ void CRouteRemote::InterruptOutput(std::vector<int> &vConflictPort)
         return;
     }
 
-    LOG_DEBUG("%d RTP Interrupt Output",m_RouteResult.chProcess);
+    LOG_DEBUG("%d RTP Interrupt Output",m_RouteResult.nProcess);
 
-    if (IsPartlyMode())
+    if (IsPartMode())
     {
         InterruptOutputPartly(vConflictPort);
     }
@@ -363,7 +337,7 @@ void CRouteRemote::InterruptOutputPartly(std::vector<int> &vConflictPort)
         {
             m_vOutput[i].bConnect = false;
             m_vOutput[i].bInterrupt = true;
-            m_pData->FreePort(m_RouteResult.chProcess,
+            g_SDKServer.m_routeManager.FreePort(m_RouteResult.nProcess,
                 false, m_vOutput[i].nPort);
             bFree = true;
         }
@@ -399,7 +373,7 @@ void CRouteRemote::InterruptOutputPartly(std::vector<int> &vConflictPort)
     {
         auto pMsg = std::make_shared<CMsg>();
         pMsg->type = MSG_RESTORE_OUTPUT;
-        CService::GetInstance()->Push(pMsg);
+        g_SDKServer.Push(pMsg);
     }
 }
 
@@ -419,7 +393,7 @@ void CRouteRemote::InterruptOutputFull()
 
 void CRouteRemote::ActivateOutput()
 {
-    if (IsPartlyMode())
+    if (IsPartMode())
     {
         if (!IsPartNewOutputCanUsed())
         {
@@ -442,7 +416,7 @@ void CRouteRemote::TryToConnect()
 {
     if (IsOutputConflict())
     {
-        m_pData->InterruptOutput(this);
+        g_SDKServer.m_routeManager.InterruptOutput(this);
     }
 
     //allocate free ports
@@ -452,12 +426,14 @@ void CRouteRemote::TryToConnect()
         t_Output &output = m_vOutput[i];
         if(output.bConnect == false)
         {
-            if (CService::GetInstance()->IsPortFree(false,output.nPort))
+            if (g_SDKServer.IsPortFree(false,output.nPort))
             {
                 bAllocate = true;
                 output.bConnect = true;
-                m_pData->AllocatePort(m_RouteResult.chProcess,
-                    false, output.nPort, m_pActivate->Priority,m_nRtpChannel);
+                g_SDKServer.m_routeManager.AllocatePort(m_RouteResult.nProcess,
+                    false, output.nPort, 
+                    m_Activate.Property.nPriority,
+                    m_Activate.Property.nAudioChannal);
             }
         }
     }
@@ -466,7 +442,7 @@ void CRouteRemote::TryToConnect()
 
     if(bAllocate)
     {
-        CService::GetInstance()->SendBusyState();
+        g_SDKServer.SendBusyState();
     }
 }
 
@@ -525,7 +501,7 @@ bool CRouteRemote::RestoreOutput()
     m_eRespone = CON_ON_ROUTESTATE;
 
     //full connect
-    if (IsPartlyMode())
+    if (IsPartMode())
     {
         return RestoreOutputPartly();
     }
@@ -541,25 +517,17 @@ bool CRouteRemote::RestoreOutputFull()
     {
         return false;
     }
-    if (IsReconnectRequest())
+    if(m_RouteResult.e_ConState == CON_RECONNECT_POSSIBLE)
     {
-        if(m_RouteResult.e_ConState == CON_RECONNECT_POSSIBLE)
-        {
-            return false;
-        }
-        else
-        {
-            LOG_DEBUG("%d RTP RestoreOutput(Full)",m_RouteResult.chProcess);
-
-            m_RouteResult.e_ConState = CON_RECONNECT_POSSIBLE;
-            CMsgConnectRequest request(m_pSystem);
-            request.RouteStatus(m_RouteResult, CON_ON_ROUTESTATE);
-            return true;
-        }
+        return false;
     }
     else
     {
-        TryToConnect();
+        LOG_DEBUG("%d RTP RestoreOutput(Full)",m_RouteResult.nProcess);
+
+        m_RouteResult.e_ConState = CON_RECONNECT_POSSIBLE;
+        CMsgConnectRequest request(m_pSystem);
+        request.SendRouteStatus(m_RouteResult, CON_ON_ROUTESTATE);
         return true;
     }
 }
@@ -579,25 +547,16 @@ bool CRouteRemote::RestoreOutputPartly()
             return false;
         }
     }
-
-    if(IsReconnectRequest())
+    if(m_RouteResult.e_ConState == CON_RECONNECT_POSSIBLE)
     {
-        if(m_RouteResult.e_ConState == CON_RECONNECT_POSSIBLE)
-        {
-            return false;
-        }
-        else
-        {
-            LOG_DEBUG("%d RTP RestoreOutput(Part)",m_RouteResult.chProcess);
-            m_RouteResult.e_ConState = CON_RECONNECT_POSSIBLE;
-            CMsgConnectRequest request(m_pSystem);
-            request.RouteStatus(m_RouteResult, CON_ON_ROUTESTATE);
-            return true;
-        }
+        return false;
     }
     else
     {
-        TryToConnect();
+        LOG_DEBUG("%d RTP RestoreOutput(Part)",m_RouteResult.nProcess);
+        m_RouteResult.e_ConState = CON_RECONNECT_POSSIBLE;
+        CMsgConnectRequest request(m_pSystem);
+        request.SendRouteStatus(m_RouteResult, CON_ON_ROUTESTATE);
         return true;
     }
 }
@@ -607,8 +566,8 @@ bool CRouteRemote::IsAllOutputCanUsed()
     for (unsigned int i = 0; i < m_vOutput.size(); i++)
     {
         t_Output &output = m_vOutput[i];
-        if (!CService::GetInstance()->IsPortCanUsed(false,
-            output.nPort,m_pActivate->Priority))
+        if (!g_SDKServer.IsPortCanUsed(false,
+            output.nPort,m_Activate.Property.nPriority))
         {
             return false;
         }
@@ -623,8 +582,8 @@ bool CRouteRemote::IsPartNewOutputCanUsed()
         t_Output &output = m_vOutput[i];
         if(output.bConnect == false)
         {
-            if (CService::GetInstance()->IsPortCanUsed(false,
-                output.nPort, m_pActivate->Priority))
+            if (g_SDKServer.IsPortCanUsed(false,
+                output.nPort, m_Activate.Property.nPriority))
             {
                 return true;
             }
@@ -640,7 +599,7 @@ bool CRouteRemote::IsOutputConflict()
         t_Output &output = m_vOutput[i];
         if(output.bConnect == false)
         {
-            if (!CService::GetInstance()->IsPortFree(false,output.nPort))
+            if (!g_SDKServer.IsPortFree(false,output.nPort))
             {
                 return true;
             }
@@ -651,40 +610,12 @@ bool CRouteRemote::IsOutputConflict()
 
 void CRouteRemote::BeActivatePhysical()
 {
-    /*
-    CActivateMicr *pMicro = new CActivateMicr();
-    CopyParameter(pMicro);
-    SET_RECONNECT_REQUEST(pMicro->Flags);
-
-    //set Gong
-    if (m_pActivate->vSrc.size()>0)
-    {
-        pMicro->nGongChannel = m_pActivate->vSrc[0].Num + 1;
-        pMicro->nGongTitle = m_pActivate->vSrc[0].Title + 1;
-        m_RouteResult.LastSrcIdx = 1;
-    }
-    else
-    {
-        m_RouteResult.LastSrcIdx = 0;
-    }
-
-    if(m_pActivate)
-    {
-        delete m_pActivate;
-        m_pActivate = NULL;
-    }
-    m_pActivate = pMicro;
-
 	CRouteLocal::Activate();
-    */
 }
 
 void CRouteRemote::BeActivateVirtual()
 {
-    CActivatePlay* pPlay = new CActivatePlay();
-    CopyParameter(pPlay);
-    SET_RECONNECT_REQUEST(pPlay->Flags);
-
+    /*
     GetIOMAP(pPlay->vIOMapPath);
     
     if(pPlay->vIOMapPath.size()==0 || !CPublic::IsAllAdpFormat(pPlay->vIOMapPath))
@@ -703,39 +634,13 @@ void CRouteRemote::BeActivateVirtual()
 		return;
 	}
     m_RouteResult.LastSrcIdx = pPlay->vIOMapPath.size() - 1;
-
-    if(m_pActivate)
-    {
-        delete m_pActivate;
-        m_pActivate = NULL;
-    }
-    m_pActivate = pPlay;
-
+    */
 	CRouteLocal::Activate();
-}
-
-void CRouteRemote::CopyParameter(CActivateMicr* pMic)
-{
-	pMic->chProcess = m_RouteResult.chProcess;
-	pMic->Priority = m_pActivate->Priority;
-	pMic->TimeOut = m_pActivate->TimeOut;
-    pMic->Level = m_pActivate->Level;
-	pMic->Flags = m_pActivate->Flags;
-    pMic->nRtpNode = CService::GetInstance()->GetNode();
-    pMic->nPort = m_nPort;
-
-    int len = m_pActivate->vSrc.size();
-    pMic->nRepeatCount = m_pActivate->vSrc[len-1].Loop;
-
-	//dest
-	for (unsigned int i = 0; i < m_pActivate->vDest.size(); i++)
-	{
-		pMic->vDest.push_back(m_pActivate->vDest[i]);
-	}
 }
 
 void CRouteRemote::GetIOMAP(std::vector<t_FILEMAP> &vPath)
 {
+    /*
 	vPath.clear();
 
 	for (unsigned int i = 0; i<m_pActivate->vSrc.size(); i++)
@@ -744,7 +649,7 @@ void CRouteRemote::GetIOMAP(std::vector<t_FILEMAP> &vPath)
 		int title = m_pActivate->vSrc[i].Title+1;
 
         t_FILEMAP file;
-        if(CService::GetInstance()->GetFileMAP(num,title,file))
+        if(g_SDKServer.GetFileMAP(num,title,file))
 		{
             vPath.push_back(file);
 		}
@@ -759,6 +664,7 @@ void CRouteRemote::GetIOMAP(std::vector<t_FILEMAP> &vPath)
             vPath.push_back(file);
         }
 	}
+    */
 }
 
 bool CRouteRemote::ReleaseOutput()
@@ -770,7 +676,7 @@ bool CRouteRemote::ReleaseOutput()
         {
             bFree = true;
             m_vOutput[i].bConnect = false;
-            m_pData->FreePort(m_RouteResult.chProcess,
+            g_SDKServer.m_routeManager.FreePort(m_RouteResult.nProcess,
                 false, m_vOutput[i].nPort);
         }
     }
@@ -779,17 +685,17 @@ bool CRouteRemote::ReleaseOutput()
     {
         auto pMsg = std::make_shared<CMsg>();
         pMsg->type = MSG_RESTORE_OUTPUT;
-        CService::GetInstance()->Push(pMsg);
+        g_SDKServer.Push(pMsg);
     }
     return bFree;
 }
 
 void CRouteRemote::CurrentPlayIndex(int nIndex)
 {
-    m_RouteResult.SrcIdx = nIndex;
+    m_RouteResult.nPlayIndex = nIndex;
     if (m_pSystem)
     {
         CMsgConnectRequest request(m_pSystem);
-        request.RouteStatus(m_RouteResult, CON_ON_ROUTESTATE);
+        request.SendRouteStatus(m_RouteResult, CON_ON_ROUTESTATE);
     }
 }

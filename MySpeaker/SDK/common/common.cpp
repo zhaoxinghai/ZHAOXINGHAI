@@ -724,13 +724,14 @@ void CCommon::Copy(std::string src, std::string dst)
     out.close();
 }
 
-bool CompareTime(const t_File &value1,const t_File &value2)
-{
-    return value1.mTime < value2.mTime;
-}
+//bool CompareTime(const t_File &value1,const t_File &value2)
+//{
+//    return value1.mTime < value2.mTime;
+//}
 
 void CCommon::CleanCache(std::string strDir,unsigned int nMaxLen,unsigned int nDelLen)
 {
+    /*
     std::vector<t_File> vFile;
     unsigned int len = CCommon::dfsFolder(strDir, vFile);
     if(len < nMaxLen)
@@ -770,7 +771,7 @@ void CCommon::CleanCache(std::string strDir,unsigned int nMaxLen,unsigned int nD
     }
 
 #endif
-
+*/
 }
 
 

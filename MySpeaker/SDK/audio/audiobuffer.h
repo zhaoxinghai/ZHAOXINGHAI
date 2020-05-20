@@ -2,7 +2,7 @@
 #ifndef AUDIO_BUFFER_H
 #define AUDIO_BUFFER_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "cyclebuffer.h"
 
 #define SAMPLE_BUFFER_SIZE (ED1AudioFrameSampleCount*sizeof(TAudioSample))

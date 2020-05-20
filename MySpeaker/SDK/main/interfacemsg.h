@@ -3,6 +3,7 @@
 #define _INTERFACEMSG_H
 
 #include "sdk.h"
+#include "sdkconnect.h"
 #include "mylog.h"
 #include "common.h"
 #include "threadrecv.h"
@@ -20,9 +21,9 @@ public:
 
     static void SyncDataTime(t_DateTime* mytime);
   
-    static void NormalAnnouncement(int nNode,CActivate* pActivate);
-    static void LocalPlayAnnouncement(CActivatePlay *pActivate);
-    static void LocalMicrAnnouncement(CActivateMicr *pActivate);
+    static void NormalAnnouncement(int nNode, CAnnouncement* pActivate);
+    static void LocalPlayAnnouncement(CAnnouncement *pActivate);
+    static void LocalMicrAnnouncement(CAnnouncement *pActivate);
     static void StopAnnouncement(int chProcess);
 
     static void LocalRecord(int nRequest, int port, std::string strPath);

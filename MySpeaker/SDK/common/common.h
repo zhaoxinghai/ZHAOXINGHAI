@@ -84,12 +84,6 @@ public:
     //volume from dB to floatscale
     static float dB2FloatScale(float fdB);
 
-#ifndef _MSC_VER
-    static int get_thread_policy(pthread_attr_t *attr);
-    static int get_thread_priority(pthread_attr_t *attr);
-    static void set_thread_policy(pthread_attr_t *attr,int policy);
-#endif
-
     static unsigned int dfsFolder(std::string folderPath, std::vector<t_File> &vFile);
     static void CleanCache(std::string strDir,unsigned int nMaxLen,unsigned int nDelLen);
 

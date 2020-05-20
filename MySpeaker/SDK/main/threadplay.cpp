@@ -3,7 +3,7 @@
 #include "audiojob.h"
 #include "device.h"
 #include "common.h"
-#include "paerror.h"
+#include "sdkerror.h"
 #include "audiobuffer.h"
 #include "mylog.h"
 #include "service.h"
@@ -38,7 +38,7 @@ void CThreadPlay::Run()
     auto msg = std::make_shared<CMsg>();
     msg->type = MSG_ALSA_INIT_FINISH;
     msg->nInt1 = 0;
-    CService::GetInstance()->Push(msg);
+    g_SDKServer.Push(msg);
 
     CThreadDevice::Run();
 
@@ -79,22 +79,20 @@ bool CThreadPlay::LoadData(unsigned int nFrames, unsigned char * pData)
 void CThreadPlay::SetLeftVolume(int nFrame,unsigned char* pData)
 {
     short* p = (short*)pData;
-    CService* pSer = CService::GetInstance();
-
     if(m_bMute)
     {
         memset(p,0,2*nFrame);
     }
     else
     {
-        if(pSer->m_fVolumeSpeaker > 0.99 && pSer->m_fVolumeSpeaker < 1.01)
+        if(g_SDKServer.m_fVolumeSpeaker > 0.99 && g_SDKServer.m_fVolumeSpeaker < 1.01)
         {
         }
         else
         {
             for(int i = 0;i<nFrame;i++)
             {
-                p[i] = CAudioFile::GetSampleS(long(p[i]*pSer->m_fVolumeSpeaker));
+                p[i] = CAudioFile::GetSampleS(long(p[i]* g_SDKServer.m_fVolumeSpeaker));
             }
         }
     }
@@ -105,15 +103,14 @@ void CThreadPlay::SetRightVolume(int nFrame,unsigned char* pData)
 {
     short* p = (short*)pData;
 
-    CService* pSer = CService::GetInstance();
-    if(pSer->m_fVolumeLineOut > 0.99 && pSer->m_fVolumeLineOut < 1.01)
+    if(g_SDKServer.m_fVolumeLineOut > 0.99 && g_SDKServer.m_fVolumeLineOut < 1.01)
     {
     }
     else
     {
         for(int i = 0;i<nFrame;i++)
         {
-            p[i] = CAudioFile::GetSampleS(long(p[i]*pSer->m_fVolumeLineOut));
+            p[i] = CAudioFile::GetSampleS(long(p[i]* g_SDKServer.m_fVolumeLineOut));
         }
     }
     LevelMeter(p,false);

@@ -1,80 +1,68 @@
 
 #include "msgconnection.h"
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "service.h"
 #include "routemanager.h"
 #include "sdk.h"
 #include "audiocapture.h"
 #include "mylog.h"
 #include "msgcheckroute.h"
-#include "msgconnectrequest.h"
 #include "common.h"
-#include "msgusagereport.h"
+#include "msgbusystate.h"
+#include "msgconnectrequest.h"
 
 CMsgConnection::CMsgConnection(CTSystem* pSys):CMsgBase(pSys)
 {
     m_Mid = PAMSG_MID_CONNECT;
 }
 
-int CMsgConnection::Activate(CActivate* pPACon)
+int CMsgConnection::Activate(CAnnouncement & act)
 {
     //submid
-    m_vBuffer.push_back((unsigned char)0x00);
+    WriteLONG(CON_ACTIVATE);
 
-    //version
-    m_vBuffer.push_back((unsigned char)0x01);
-
-    //chrequest
-    WriteLONG(pPACon->chRequest);
+    //request
+    WriteLONG(act.nRequest);
 
     //Priority
-    m_vBuffer.push_back((unsigned char)pPACon->Priority);
+    WriteLONG(act.Property.nPriority);
 
     //Flags
-    WriteLONG(pPACon->Flags);
+    WriteLONG(act.Property.nFlags);
 
     //timeout
-    WriteLONG(pPACon->TimeOut);  
+    WriteLONG(act.Property.nTimeOut);  
 
-    //Level(int16)
-    WriteLONG(pPACon->Level);
+    //volume
+    WriteLONG(act.Property.nVolume);
 
     //Originator
-    WriteLONG(pPACon->nTriggleNode);    //0 to 998	CS number on the originator's system
-    WriteLONG(pPACon->nTriggleType);  //0 - 400	node number of the originator
-    WriteLONG(pPACon->nTriggleNumber);
+    WriteLONG(act.Property.nTriggleNode);
+    WriteLONG(act.Property.nTriggleType);
+    WriteLONG(act.Property.nTriggleNumber);
 
-    //SecHash
-    m_vBuffer.push_back(0);
-    m_vBuffer.push_back(0);
-    m_vBuffer.push_back(0);
-    m_vBuffer.push_back(0);
-    m_vBuffer.push_back(0);
-    m_vBuffer.push_back(0);
-    m_vBuffer.push_back(0);
-    m_vBuffer.push_back(0);
+    //is audio stream
+    WriteLONG(act.Property.bAudioStream ? 1:0);
 
-    if (IsRtpStream(pPACon))
+    if (act.Property.bAudioStream)
     {
-        WriteRtpSrc(pPACon);
+        WriteLONG(act.Property.nAudioNode);
+        WriteLONG(act.Property.nAudioChannal);
     }
     else
     {
-        WriteSrcEI(pPACon->vSrc);
+        WriteSrcEI(act.vSrc);
     }
 
     //NumOfDstnEl
-    WriteDestEI(pPACon->vDest);
-
-    //reserved
-    m_vBuffer.push_back(0x00);
+    WriteDestEI(act.vDest);
 
     m_pSystem->OnSend(this);
 
     return 0;
 }
 
-void CMsgConnection::WriteSrcEI(std::vector<t_AudioSrc> &vSrc)
+void CMsgConnection::WriteSrcEI(std::vector<t_Source> &vSrc)
 {
     unsigned char NumOfSrc = (unsigned char)vSrc.size();
     m_vBuffer.push_back(NumOfSrc);
@@ -85,212 +73,78 @@ void CMsgConnection::WriteSrcEI(std::vector<t_AudioSrc> &vSrc)
     }
 }
 
-void CMsgConnection::WriteOneSrc(t_AudioSrc &src)
+void CMsgConnection::WriteOneSrc(t_Source&src)
 {
-    m_vBuffer.push_back(src.Loop);
-    m_vBuffer.push_back(src.Nextldx);
-
-    WriteLONG(src.Num);
-    m_vBuffer.push_back(src.Type);
-    m_vBuffer.push_back((unsigned char)src.Title);
+    WriteLONG(src.eType);
+    WriteLONG(src.nNumber);
 }
 
-void CMsgConnection::WriteRtpSrc(CActivate* pPACon)
-{
-    CActivateMicr* pAc = (CActivateMicr*)pPACon;
-
-    //src count
-    m_vBuffer.push_back(1);
-
-    //loop
-    m_vBuffer.push_back(0);
-    m_vBuffer.push_back(255);
-
-    WriteLONG(pAc->nRtpNode);
-    m_vBuffer.push_back(AS_TYPE_AN);
-    m_vBuffer.push_back(pAc->nRtpChannel);
-}
-
-void CMsgConnection::WriteDestEI(std::vector<t_AudioDest> &vDest)
+void CMsgConnection::WriteDestEI(std::vector<t_Destination> &vDest)
 {
     unsigned short NumOfDest = (unsigned short)vDest.size();
 
     WriteLONG(NumOfDest);
 
-
     for (unsigned int i = 0;i < vDest.size();i++)
     {
-        t_AudioDest &dest = vDest[i];
+        t_Destination &dest = vDest[i];
 
-        WriteLONG(dest.Sys);
-
-        
-        //Type
-        m_vBuffer.push_back((unsigned char)dest.Type);
+        WriteLONG(dest.nNode);
 
         //output
         unsigned char szDest[32] = { 0 };
         ChangeVectorto32Byte(szDest,dest.vOutputPort);
 
-        unsigned char begin = 0;
-        unsigned char end = 0;
-        TrimEmpty(szDest,begin,end);
-
-        //offset
-        m_vBuffer.push_back(begin);
-        
-        //len
-        unsigned char len = 32 - begin - end;
-        m_vBuffer.push_back(len);
-
         //data
-        for (int i = begin;i < 32 - end;i++)
+        for (int i = 0;i < 32;i++)
         {
             m_vBuffer.push_back(szDest[i]);
         }
     }
 }
 
-void CMsgConnection::TrimEmpty(unsigned char* pDest, unsigned char &begin, unsigned char &end)
-{
-    //get begin
-    begin = 0;
-    for (int i = 0;i < 31;i++)
-    {
-        if (pDest[i] == 0)
-        {
-            begin++;
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    //get end
-    end = 0;
-    for (int i = 31;i >= 0;i--)
-    {
-        if (pDest[i] == 0)
-        {
-            end++;
-        }
-        else
-        {
-            break;
-        }
-    }
-}
-
-bool CMsgConnection::IsRtpStream(CActivate * pPACon)
-{
-    if (pPACon->type == ACTIVATE_MICR
-        || pPACon->type == ACTIVATE_PLAY)
-    {
-        return true;
-    }
-    return false;
-}
-
-int CMsgConnection::GetGongCount(CActivate* pPACon)
-{
-	for(unsigned int i = 0;i<pPACon->vSrc.size();i++)
-	{
-		if(pPACon->vSrc[i].Type==AS_TYPE_AI && pPACon->vSrc[i].Num==30)
-		{
-			return pPACon->vSrc[i].Title;
-		}
-	}
-	return 0;
-}
-
-
-int CMsgConnection::ReActivate(CReActivate* pReAct)
+int CMsgConnection::ReActivate(int nRequest,int nProcess)
 {
     //submid
-    m_vBuffer.push_back((unsigned char)0x02);
+    WriteLONG(CON_REACTIVATE);
 
-    //chrequest
-    WriteLONG(pReAct->chRequest);
+    //request
+    WriteLONG(nRequest);
 
-    //chrequest
-    WriteLONG(pReAct->chProcess);
-
-    //srcEI
-    m_vBuffer.push_back(0);    //loop
-    m_vBuffer.push_back(255);
-
-    unsigned short num = 0;
-
-    //1000 0000 0000 0000     symbol
-    num |= (1 << 15);
-
-    //0000 0111 1000 0000     set system number bits
-    num |= pReAct->nRtpNode << 7;
-
-    // set rtp channel number
-    num |= pReAct->nRtpChannel;
-
-    WriteLONG(num);
-    WriteLONG(0);
+    //process
+    WriteLONG(nProcess);
 
     m_pSystem->OnSend(this);
 
     return 0;
 }
 
-int CMsgConnection::DeActivate(CDeActivate* pDe)
+int CMsgConnection::DeActivate(int nRequest, int nProcess)
 {
     //submid
-    m_vBuffer.push_back((unsigned char)0x01);
+    WriteLONG(CON_DEACTIVATE);
 
-    //chrequest
-    WriteLONG(pDe->chRequest);
+    //request
+    WriteLONG(nRequest);
 
-    //chrequest
-    WriteLONG(pDe->chProcess);
+    //process
+    WriteLONG(nProcess);
 
     m_pSystem->OnSend(this);
 
     return 0;
 }
 
-int CMsgConnection::DeActivateViacsNum(unsigned short csNum)
-{
-    //submid
-    m_vBuffer.push_back((unsigned char)0x0F);
-
-    //version
-    m_vBuffer.push_back((unsigned char)0x01);
-
-    //cs number
-    WriteLONG(csNum);
-
-    m_pSystem->OnSend(this);
-    
-    return 0;
-}
-
-int CMsgConnection::DeActivateAll()
-{
-    //submid
-    m_vBuffer.push_back((unsigned char)0x06);
-
-    m_pSystem->OnSend(this);
-
-    return 0;
-}
-
-int CMsgConnection::Interrupt(CDeActivate* pDe)
+int CMsgConnection::Interrupt(int nRequest, int nProcess)
 {
     //submid
     m_vBuffer.push_back((unsigned char)0x03);
 
     //chrequest
-    WriteLONG(pDe->chRequest);
+    WriteLONG(nRequest);
 
     //chrequest
-    WriteLONG(pDe->chProcess);
+    WriteLONG(nProcess);
 
     m_pSystem->OnSend(this);
 
@@ -299,119 +153,75 @@ int CMsgConnection::Interrupt(CDeActivate* pDe)
 
 void CMsgConnection::OnRespond(unsigned char* pBuf, const int len)
 {
-    m_SubMid = pBuf[0];
-    
-    if (m_SubMid & 0x80)
+    switch (m_SubMid)
     {
-        switch (m_SubMid)
-        {
-        case CON_ON_REACTIVATE:
-        case CON_ON_INTERRUPT:
-        case CON_ON_ACTIVATE:
-        case CON_ON_DEACTIVATE:
-        case CON_ON_ROUTESTATE:
-        {
-        	OnRespond(pBuf, len ,(e_RESPONE)m_SubMid);
-        	break;
-        }
-        case CON_ON_CHECKROUTE:
-        {
-            OnCheckRoute(pBuf,len);
-        	break;
-        }
-        case 0x87:  //destination usage report,every 5 seconds
-        case 0x8D:  //V11 local usage report
-        case 0x8E:  //V11 remote usage report
-        {
-            CMsgUsageReport usage(m_pSystem);
-            usage.SetMid(m_Mid);
-            usage.OnRespond(pBuf, len);
-            break;
-        }
-        case 0x8F:
-            OnDeActivateViacsNum(pBuf, len);
-            break;
-        case 0x91:
-        {
-        	//i don't know what thing to do
-            //LOG_DEBUG("CMsgConnection %d, i don't know what to do?", m_SubMid);
-        	break;
-        }
-        default:
-        {
-            LOG_ERROR("CMsgConnection %d", m_SubMid);
-        }
-        }
+    case CON_ON_REACTIVATE:
+    case CON_ON_INTERRUPT:
+    case CON_ON_ACTIVATE:
+    case CON_ON_DEACTIVATE:
+    case CON_ON_ROUTESTATE:
+    {
+        OnRespond(pBuf, len ,(e_CONNECT_RESPONE)m_SubMid);
+        break;
     }
-    else
+    case CON_ON_CHECKROUTE:
     {
-        //this is request
-        CMsgConnectRequest request(m_pSystem);
-        request.SetMid(m_Mid);
-        request.OnRespond(pBuf, len);
+        OnCheckRoute(pBuf,len);
+        break;
+    }
+    default:
+    {
+        LOG_ERROR("CMsgConnection %d", m_SubMid);
+    }
     }
 }
 
-void CMsgConnection::OnRespond(unsigned char* pBuf, const int len, e_RESPONE response)
+void CMsgConnection::OnRespond(unsigned char* pBuf, const int len, e_CONNECT_RESPONE response)
 {
-    if (len != 9)
-        return;
+    t_ActivateRet ret;
+    ret.nErrorCode = ReadLONG(pBuf);
+    pBuf += 4;
 
-    unsigned char retVal = pBuf[1];
-   
-    unsigned long chRequest = ReadLONG(pBuf + 2);
-    unsigned long chProcess = ReadLONG(pBuf + 4);
-    unsigned char conState = pBuf[6];
-    unsigned char SrcIdx = pBuf[7];
-    unsigned char LastSrcIdx = pBuf[8];
+    ret.nRequest = ReadLONG(pBuf);
+    pBuf += 4;
 
-    //result
-	CActivateResult ret;
-    ret.nErrorCode = 0;
-	ret.strErrorDesc = "OK";
-    ret.RetVal = retVal;
-	ret.chRequest = chRequest;
-	ret.chProcess = chProcess;
-	ret.e_ConState = (CONSTATE)conState;
-    if(ret.e_ConState == CON_PARTLY_DEFECT)
-        ret.e_ConState = CON_PARTLY_CONNECT;
+    ret.nProcess = ReadLONG(pBuf);
+    pBuf += 4;
+    
+    ret.nRepeatIndex = ReadLONG(pBuf);
+    pBuf += 4;
 
-	ret.SrcIdx = SrcIdx;
-	ret.LastSrcIdx = LastSrcIdx;
+    ret.nPlayIndex = ReadLONG(pBuf + 4);
 
-    if (retVal != 0)
-        return;
-
-    CRouteManager &Mgr = CService::GetInstance()->m_routeManager;
-    CRoute* pRoute = Mgr.GetRouteByRequest(chRequest);
+    CRoute* pRoute = g_SDKServer.m_routeManager.GetRouteByRequest(ret.nRequest);
     if (pRoute != NULL && !pRoute->IsDisConnect())
     {
-        //pRoute->UpdateResult(m_AdrSrc.GetNode(), ret, response);
+        pRoute->UpdateResult(m_pSystem->GetNode(), ret, (int)response);
     	switch(response)
     	{
     	case CON_ON_ACTIVATE:
     	{
-            //pRoute->OnActivate(m_AdrSrc.GetNode(), ret);
+            pRoute->OnActivate(m_pSystem->GetNode(), ret);
     		break;
     	}
     	case CON_ON_DEACTIVATE:
     	{
-            //pRoute->OnDeActivate(m_AdrSrc.GetNode(), ret);
+            pRoute->OnDeActivate(m_pSystem->GetNode(), ret);
     		break;
     	}
     	case CON_ON_REACTIVATE:
     	{
-            //pRoute->OnReActivate(m_AdrSrc.GetNode(), ret);
+            pRoute->OnReActivate(m_pSystem->GetNode(), ret);
     		break;
     	}
     	case CON_ON_INTERRUPT:
     	{
-            //pRoute->OnInterrupt(m_AdrSrc.GetNode(), ret);
+            pRoute->OnInterrupt(m_pSystem->GetNode(), ret);
     		break;
     	}
     	case CON_ON_ROUTESTATE:
     	{
-            //pRoute->OnRouteState(m_AdrSrc.GetNode(), ret);
+            pRoute->OnRouteState(m_pSystem->GetNode(), ret);
     		break;
     	}
     	default:
@@ -421,17 +231,17 @@ void CMsgConnection::OnRespond(unsigned char* pBuf, const int len, e_RESPONE res
     	}
         if(pRoute->IsDisConnect())
         {
-            CService::GetInstance()->m_routeManager.CleanRoute();
+            g_SDKServer.m_routeManager.CleanRoute();
         }
     }
     else
     {
         //deactivate not exist route
-        CDeActivate de;
-        de.chRequest = chRequest;
-        de.chProcess = chProcess;
-        CMsgConnection con(m_pSystem);
-        con.DeActivate(&de);
+        if (ret.nErrorCode == 0)
+        {
+            CMsgConnection con(m_pSystem);
+            con.DeActivate(ret.nRequest,ret.nProcess);
+        }
     }
 }
 
@@ -443,11 +253,11 @@ void CMsgConnection::OnCheckRoute(unsigned char * pBuf, const int /*len*/)
         return;
     }
 
-    unsigned short chRequest = ReadLONG(pBuf + 2);
-    unsigned short chProcess = ReadLONG(pBuf + 4);
+    int nRequest = ReadLONG(pBuf + 2);
+    int nProcess = ReadLONG(pBuf + 4);
 
-    CRouteManager &Mgr = CService::GetInstance()->m_routeManager;
-    CRoute* pRoute = Mgr.GetRouteByProcess(chProcess);
+    CRouteManager &Mgr = g_SDKServer.m_routeManager;
+    CRoute* pRoute = Mgr.GetRouteByProcess(nProcess);
     if (pRoute != NULL && !pRoute->IsDisConnect())
     {
         if (pRoute->GetType() == ROUTE_REMOTE)
@@ -458,35 +268,7 @@ void CMsgConnection::OnCheckRoute(unsigned char * pBuf, const int /*len*/)
     }
     else
     {
-        CDeActivate de;
-        de.chRequest = chRequest;
-        de.chProcess = chProcess;
         CMsgConnection con(m_pSystem);
-        con.DeActivate(&de);
+        con.DeActivate(nRequest,nProcess);
     }
-}
-
-void CMsgConnection::OnDeActivateViacsNum(unsigned char* /*pBuf*/, const int /*len*/)
-{
-    /*
-    if (len != 5)
-        return;
-
-    unsigned short csNum = ReadLONG(pBuf + 2);
-    unsigned char retVal = pBuf[4];
-
-    if (retVal == 0)
-    {
-        LOG_DEBUG("csNum:%d %s OK", csNum, "OnDeActivateViacsNum");
-    }
-    else
-    {
-        LOG_DEBUG("csNum:%d %s Error", csNum, "OnDeActivateViacsNum");
-    }
-
-    CDeActivateViacsNumResult ret;
-    ret.nErrorCode = retVal;
-    ret.strErrorDesc = "OK";
-    CService::GetInstance()->ExcuteCallback(pCall, &ret);
-    */
 }

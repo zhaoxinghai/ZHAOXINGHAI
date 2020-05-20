@@ -2,129 +2,86 @@
 #ifndef SDK_H
 #define SDK_H
 
-#include "predefine.h"
-#include "callback.h"
-#include "paerror.h"
-#include "connection.h"
+#include "sdkdefine.h"
+#include "sdkcallback.h"
+#include "sdkerror.h"
+#include "sdkconnect.h"
 #include "device.h"
-#include "detectmemoryleak.h"
 #include "version.h"
 
 //this is for function callback
-typedef void(*PACallback)(const CResultBase *pResult);
+typedef void(*SDKCallback)(const CResult *pResult);
 
-namespace PA
+extern "C"
 {
-    //Mode config/normal
-    void DLL_API SwitchMode(e_Mode eMode);
-
-    //Enable accept remote connect
-    void DLL_API EnableAccept(bool bEnable);
-
-    //Enable security
-    void DLL_API EnableSecurity(bool bEnable);
-
-    //is audio job overrun
-    bool DLL_API IsAudioJobOverRun(int &nRunningCount);
+    //debug mode can print all the debug info
+    void SDK_API EnableDebug();
 
     //set audio sound card device,example below
     //ch1 will be:1,2,4,5,6
     //ch2 will be:9,10,11,12,13,14
-    int DLL_API AddSoundCardDevice(std::string strName, bool bCapture,std::vector<int> &vPortCh1, std::vector<int> &vPortCh2);
-    void DLL_API InitVolume(float fSG,float fMic,float fLineIn,float fSpeaker,float fLineOut);
+    int SDK_API AddSoundCardDevice(std::string strName, bool bCapture,std::vector<int> &vPortCh1, std::vector<int> &vPortCh2);
 
     //every 200 minseconds will update,unit dB
-    float DLL_API GetLevelmeter(bool bCapture,int nPort);
+    float SDK_API GetLevelmeter(bool bCapture,int nPort);
 
     //register a global callback function
-    bool DLL_API RegisterCallback(PACallback callback);
-
-    //Init input parameter
-    void DLL_API InitArg(int count,char** arg);
+    bool SDK_API RegisterCallback(SDKCallback callback);
 
     //Set multicast base address
-    void DLL_API SetBaseAddress(int nBaseAddress);
+    void SDK_API SetBaseAddress(int nBaseAddress);
 
     //Init all system
-    bool DLL_API Init(t_Node &curNode, std::vector<t_Node> &vSystem);
+    bool SDK_API Init(t_Node &curNode, std::vector<t_Node> &vSystem);
 
     //Init File MAP
-    void DLL_API SetFileMAP(std::vector<t_FILEMAP> &vFileMap);
+    void SDK_API SetFileMAP(std::vector<t_FILEMAP> &vFileMap);
 
     //get file path from channel-title
-    bool DLL_API GetFileMAP(int nChannel,int nTitle,t_FILEMAP &file);
-
-    //Init Configuration
-    void DLL_API Init(t_Configuration &c);
+    bool SDK_API GetFileMAP(int nChannel,int nTitle,t_FILEMAP &file);
 
     //Monitor busy state
-    void DLL_API MonitorBusyState();
+    void SDK_API MonitorBusyState();
 
-    //Monitor lifesignal
-    void DLL_API MonitorLifeSignal();
-
-    //get a unique id
-    unsigned short DLL_API GetChProcess();
+    //Monitor life signal
+    void SDK_API MonitorLifeSignal();
 
     //begin to run the thread
-    bool DLL_API Run();
-    bool DLL_API Exit(bool bWait);
-    
+    bool SDK_API Run();
+    bool SDK_API Exit(bool bWait);
+
     //this function update the device state
-    void DLL_API UpdateSysState(bool bLocalError);
+    void SDK_API UpdateSysState(bool bLocalError);
 
     //synchronize time and date(datatime master)
-    int DLL_API SyncDataTime(t_DateTime mytm);
-
-    //Get device state
-    void DLL_API GetDevicesState(int nNode, t_VDevice dev);
-
-    //loger
-    void DLL_API LogDebug(const char *szFormat,...);
-    void DLL_API LogError(const char *szFormat, ...);
+    int SDK_API SyncDataTime(t_DateTime mytm);
 
     //normal announcement(nNode is audio source or scu)
-    int  DLL_API NormalAnnouncement(int nNode,CActivate* pActivate);
+    int  SDK_API NetworkAnnouncement(int nNode, CAnnouncement* pActivate);
   
     //local microphone announcement
-    int DLL_API LocalMicrAnnouncement(CActivateMicr *pActivate);
+    int SDK_API LocalMicrAnnouncement(CAnnouncement *pActivate);
 
-    //from local disk or USB to net(source is local path)
-    int DLL_API LocalPlayAnnouncement(CActivatePlay *pActivate);
+    //local file announcement
+    int SDK_API LocalFileAnnouncement(CAnnouncement *pActivate);
 
     //stop announcement
-    int DLL_API StopAnnouncement(int chProcess);
+    int SDK_API StopCall(int chRequest);
 
     //audio stream record
-    int DLL_API LocalRecord(int chRequest,int nPort,std::string strFilePath);
-    int DLL_API StopLocalRecord(int chRequest);
+    int SDK_API LocalRecord(int chRequest,int nPort,std::string strFilePath);
+    int SDK_API StopLocalRecord(int chRequest);
 
-    //Volume ajust
-    void DLL_API VolumeAjust(int chProcess,float fVolumedB);
-    void DLL_API SetVolume(bool bCapture,int nPort,float fVolumedB);
+    //call volume ajust
+    void SDK_API VolumeAjust(int chRequest,float fVolumedB);
+
+    //device volume control
+    void SDK_API SetVolume(int nNode,bool bCapture,int nPort,float fVolumedB);
+    void SDK_API SetStepVolume(int nNode, bool bCapture, int nPort, float fSetupVolumedB);
 
     //check audio file
-    bool DLL_API CheckAdpFile(std::string strPath);
-    bool DLL_API CheckWavFile(std::string strPath);
-
-    //transport line
-    void DLL_API TransportLine(int nNode,bool bAction,std::vector<t_TL> vTL);
-
-    //Telnet command
-    std::string DLL_API TelnetCommand(std::string strCmd);
-    void DLL_API TextOutput(MYSOCK tcpSock,std::string strResult);
-
-    //volume control
-    void DLL_API AudioControl(int nNode,const t_VDevice &de,float fVolume);
-
-    //Audio control result
-    void DLL_API ReplyAudioControl(bool IsTCP,int nNode,MYSOCK tcpSock,t_VolReply &reply);
-
-    //Enable CCCF function
-    void DLL_API EnableCCCF(bool bOpen);
-
-    //LampTest for CCCF
-    void DLL_API LampTest(bool bActivate);
+    bool SDK_API CheckAdpFile(std::string strPath);
+    bool SDK_API CheckWavFile(std::string strPath);
 }
 
 #endif

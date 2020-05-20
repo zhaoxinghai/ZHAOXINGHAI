@@ -3,10 +3,10 @@
 #include "common.h"
 #include "mylog.h"
 #include "threadtimer.h"
-#include "paerror.h"
+#include "sdkerror.h"
 #include "service.h"
 #include "routemanager.h"
-#include "callback.h"
+#include "sdkcallback.h"
 #include "public.h"
 
 CAudioPlay::CAudioPlay(e_PLAY_TYPE type)
@@ -36,7 +36,7 @@ CAudioPlay::CAudioPlay(e_PLAY_TYPE type)
     m_nCurPlayIndex = 0;
     m_bPlayFinish = false;
 
-    m_pThreadDevice = CService::GetInstance()->m_vThreadCapture[0].get();
+    m_pThreadDevice = g_SDKServer.m_vThreadCapture[0].get();
 
     //set adp frame count
     m_adpAudiobuffer.SetSize(ED1AudioAdpFrameCount*2);
@@ -46,7 +46,7 @@ CAudioPlay::CAudioPlay(e_PLAY_TYPE type)
 
 CAudioPlay::~CAudioPlay()
 {
-    CService::GetInstance()->m_routeManager.RemoveChannel(m_rtpChannel);
+    g_SDKServer.m_routeManager.RemoveChannel(m_rtpChannel);
 }
 
 e_PLAY_TYPE CAudioPlay::GetType()
@@ -88,7 +88,7 @@ void CAudioPlay::SetAudioPath(std::vector<t_FILEMAP> &vPath)
 
 void CAudioPlay::Run()
 {
-    CService::GetInstance()->PushRtpJob();
+    g_SDKServer.PushRtpJob();
 
     if ( m_type == LOCAL_ADP2NET)
     {
@@ -109,7 +109,7 @@ void CAudioPlay::Run()
     }
 
     SendAudioSignal(false);
-    CService::GetInstance()->PopRtpJob();
+    g_SDKServer.PopRtpJob();
 
     if (m_bStop)
     {
@@ -294,18 +294,11 @@ bool CAudioPlay::OpenNewFile()
     //no other file
     if (m_nCurPlayIndex >= (int)m_vAudioPath.size())
     {
-        if (m_nRepeatCount == 0
-                || m_nRepeatCount == 255
-                || m_nCurrentRepeat < m_nRepeatCount)
+        if (m_nRepeatCount == 0 || m_nCurrentRepeat < m_nRepeatCount)
         {
             //go to next repeat
             m_nCurrentRepeat++;
             m_nCurPlayIndex = 0;
-
-            CCurrentRepeat ret;
-            ret.chProcess = m_chProcess;
-            ret.nCurrentRepeat = m_nCurrentRepeat;
-            CService::GetInstance()->ExcuteCallback(&ret);
         }
         else
         {
@@ -339,7 +332,7 @@ bool CAudioPlay::OpenNewFile()
     pMsg->type = MSG_PLAY_INDEX;
     pMsg->nInt1 = m_chProcess;
     pMsg->nInt2 = m_nCurPlayIndex;
-    CService::GetInstance()->Push(pMsg);
+    g_SDKServer.Push(pMsg);
 
     m_nCurPlayIndex++;
     return true;

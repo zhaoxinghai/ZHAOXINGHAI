@@ -11,7 +11,7 @@
 #include "common.h"
 
 #define RTP_PLAY_PORT_START   0
-#define RTP_PLAY_PORT_END     127
+#define RTP_PLAY_PORT_END     200
 
 CRouteManager::CRouteManager()
 {
@@ -66,7 +66,7 @@ void CRouteManager::StartAudio(int chProcess)
     if (!pJob->IsRunning())
     {
         pJob->SetRunning(true);
-        CService::GetInstance()->m_ThreadPool.push(pJob);
+        g_SDKServer.m_ThreadPool.push(pJob);
     }
 }
 
@@ -175,7 +175,7 @@ void CRouteManager::AllocatePort(int chRequest, bool bCapture, int nPort, int nP
         CCommon::WriteGPIO2(m_AmpHandle,str.c_str());
     }
 
-    CService::GetInstance()->AllocatePort(bCapture, nPort, nPriority, nRTPChannel);
+    g_SDKServer.AllocatePort(bCapture, nPort, nPriority, nRTPChannel);
 
     CAudioJob* pJob = GetAudio(chRequest);
     if(pJob == NULL)
@@ -193,7 +193,7 @@ void CRouteManager::FreePort(int chRequest, bool bCapture, int nPort)
         CCommon::WriteGPIO2(m_AmpHandle,str.c_str());
     }
 
-    CService::GetInstance()->FreePort(bCapture, nPort);
+    g_SDKServer.FreePort(bCapture, nPort);
 
     CAudioJob* pJob = GetAudio(chRequest);
     if(pJob == NULL)
@@ -228,7 +228,7 @@ CRoute* CRouteManager::GetRouteByProcess(int chProcess)
     while (iter != m_vRoute.end())
     {
         CRoute* pRoute = (*iter);
-        if (pRoute->m_RouteResult.chProcess == chProcess)
+        if (pRoute->m_RouteResult.nProcess == chProcess)
         {
             return pRoute;
         }
@@ -243,8 +243,8 @@ CRoute* CRouteManager::GetRouteByProcessRequest(int chProcess,int chRequest)
     while (iter != m_vRoute.end())
     {
         CRoute* pRoute = (*iter);
-        if (pRoute->m_RouteResult.chProcess == chProcess
-                && pRoute->m_RouteResult.chRequest == chRequest)
+        if (pRoute->m_RouteResult.nProcess == chProcess
+                && pRoute->m_RouteResult.nRequest == chRequest)
         {
             return pRoute;
         }
@@ -261,7 +261,7 @@ CRoute* CRouteManager::GetRouteByRequest(int chRequest)
         CRoute* pRoute = (*iter);
         for (unsigned int i = 0; i < pRoute->m_vDest.size(); i++)
         {
-            if (pRoute->m_vDest[i].ret.chRequest == chRequest)
+            if (pRoute->m_vDest[i].ret.nRequest == chRequest)
             {
                 return pRoute;
             }
@@ -271,7 +271,7 @@ CRoute* CRouteManager::GetRouteByRequest(int chRequest)
     return NULL;
 }
 
-bool CRouteManager::IsRequestExist(int nNode,int chRequest)
+CRouteRemote* CRouteManager::GetRemoteRoute(int nNode, int chRequest)
 {
     for(unsigned int i = 0;i<m_vRoute.size();i++)
     {
@@ -280,34 +280,13 @@ bool CRouteManager::IsRequestExist(int nNode,int chRequest)
         {
             CRouteRemote* p = (CRouteRemote*)pRoute;
             if(p->m_pSystem->m_Node.nNode==nNode
-                    && p->m_RouteResult.chRequest == chRequest)
+                    && p->m_RouteResult.nRequest == chRequest)
             {
-                return true;
+                return p;
             }
         }
     }
-    return false;
-}
-
-bool CRouteManager::IsRequestFull()
-{
-    int count = 0;
-    for(unsigned int i = 0;i<m_vRoute.size();i++)
-    {
-        if(m_vRoute[i]->GetType()==ROUTE_REMOTE)
-        {
-            count++;
-        }
-    }
-    if(count >= m_nRemoteMaxCount)
-    {
-        LOG_DEBUG("%s","remote request is full.");
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return NULL;
 }
 
 void CRouteManager::EverySecond()
@@ -379,8 +358,8 @@ void CRouteManager::AddRoute(CRoute* pRoute)
     while (iter != m_vRoute.end())
     {
         auto item = (*iter);
-        int nPriority = item->m_pActivate->Priority;
-        if (pRoute->m_pActivate->Priority >= nPriority)
+        int nPriority = item->m_Activate.Property.nPriority;
+        if (pRoute->m_Activate.Property.nPriority >= nPriority)
         {
             m_vRoute.insert(iter, pRoute);
             bInsert = true;
@@ -431,7 +410,7 @@ void CRouteManager::InterruptInput(CRouteLocal* pNewRoute)
         CRoute* pRoute = m_vRoute[i];
 
         //self,can't interrupt any route
-        if (pRoute->m_RouteResult.chProcess == pNewRoute->m_RouteResult.chProcess)
+        if (pRoute->m_RouteResult.nProcess == pNewRoute->m_RouteResult.nProcess)
             break;
 
         //network don't need to interrupt
@@ -439,7 +418,8 @@ void CRouteManager::InterruptInput(CRouteLocal* pNewRoute)
             continue;
 
         CRouteLocal* p = (CRouteLocal*)pRoute;
-        if (pNewRoute->m_nPort == p->m_nPort )
+        if (pNewRoute->m_Activate.Property.nPort == 
+            p->m_Activate.Property.nPort )
         {
             p->InterruptInput();
         }
@@ -457,7 +437,7 @@ void CRouteManager::InterruptInput(int nPort)
             continue;
 
         CRouteLocal* p = (CRouteLocal*)pRoute;
-        if (nPort == p->m_nPort)
+        if (nPort == p->m_Activate.Property.nPort)
         {
             p->InterruptInput();
         }
@@ -471,7 +451,7 @@ void CRouteManager::InterruptOutput(CRouteRemote* pNewRoute)
         CRoute* pRoute = m_vRoute[i];
 
         //self,can't interrupt any route
-        if (pRoute->m_RouteResult.chProcess == pNewRoute->m_RouteResult.chProcess)
+        if (pRoute->m_RouteResult.nProcess == pNewRoute->m_RouteResult.nProcess)
             break;
 
         if (pRoute->GetType() != ROUTE_REMOTE)
@@ -608,14 +588,14 @@ void CRouteManager::AudioJobFinish(CAudioJob * pJob)
         if (p->GetType() == CAPTURE_RECORD)
         {
             CLocalRecordResult ret;
-            ret.chRequest = p->GetRecordID();
-            ret.chProcess = p->GetChProcess();
+            ret.nRequest = p->GetRecordID();
+            //ret.n = p->GetChProcess();
             ret.strFilePath = p->GetRecordPath();
             ret.nErrorCode = p->GetError();
-            CService::GetInstance()->ExcuteCallback(&ret);
+            g_SDKServer.ExcuteCallback(&ret);
 
             //need to release the port
-            FreePort(ret.chProcess,true, p->GetPort());
+            //FreePort(ret.nProcess,true, p->GetPort());
             bRestoreInput = true;
         }
     }
@@ -624,10 +604,10 @@ void CRouteManager::AudioJobFinish(CAudioJob * pJob)
         CAudioPlay* p = (CAudioPlay*)pJob;
         if (p->GetType() == LOCAL_ADP2LISTEN)
         {
-            CActivateResult ret;
-            ret.chProcess = p->GetChProcess();
-            ret.e_ConState = CON_DIS_CONNECT;
-            CService::GetInstance()->ExcuteCallback(&ret);
+            CAnnouncementResult ret;
+            ret.nProcess = p->GetChProcess();
+            ret.eCallState = CALL_DIS_CONNECT;
+            g_SDKServer.ExcuteCallback(&ret);
 
             //need to release the listening port
             std::vector<int> vPort;
@@ -686,7 +666,7 @@ void CRouteManager::AudioJobFinishPause(CAudioJob * pJob)
         else
         {
             pJob->SetRunning(true);
-            CService::GetInstance()->m_ThreadPool.push(pJob);
+            g_SDKServer.m_ThreadPool.push(pJob);
         }
     }
 }
@@ -706,7 +686,7 @@ void CRouteManager::GetConflictPort(
             continue;
         }
         std::vector<int> vGroup;
-        CService::GetInstance()->GetGroupPort(vSrc[i].nPort,vGroup);
+        g_SDKServer.GetGroupPort(vSrc[i].nPort,vGroup);
         CMsgBase::ChangeVectorto32Byte(szBusyOut, vGroup);
     }
 
@@ -776,7 +756,7 @@ void CRouteManager::CurrentPlayIndex(int chProcess, int nIndex)
     CRoute* p = GetRouteByProcess(chProcess);
     if (p)
     {
-        p->CurrentPlayIndex(nIndex);
+        //p->CurrentPlayIndex(nIndex);
     }
 }
 
@@ -814,7 +794,7 @@ std::string CRouteManager::Constat()
         {
             strSt = "BREAK";
         }
-        std::string strNO = CCommon::StrFormat("%-6d",p->m_RouteResult.chProcess);
+        std::string strNO = CCommon::StrFormat("%-6d",p->m_RouteResult.nProcess);
 
         //source and triggle
         if(p->GetType() == ROUTE_REMOTE)

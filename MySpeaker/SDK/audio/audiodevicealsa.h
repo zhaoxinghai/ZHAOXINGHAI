@@ -4,7 +4,7 @@
 #ifndef AUDIO_LINUX_H
 #define AUDIO_LINUX_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "audiodevice.h"
 #include <alsa/asoundlib.h>
 

@@ -2,11 +2,11 @@
 #ifndef _PUBLIC_H
 #define _PUBLIC_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "mylog.h"
 #include "audiodevice.h"
 #include "define.h"
-#include "callback.h"
+#include "sdkcallback.h"
 
 struct t_Wav_header
 {
@@ -44,8 +44,8 @@ public:
                                  int nBlock);
   
     //id
-    static unsigned short GetChRequest();
-    static unsigned short GetChProcess();
+    static int GetChRequest();
+    static int GetChProcess();
 
     //is the port exist
     static bool IsPortExist(std::vector<int> &vSrc, int nPort);

@@ -3,7 +3,7 @@
 #include "audiojob.h"
 #include "device.h"
 #include "public.h"
-#include "paerror.h"
+#include "sdkerror.h"
 #include "audiobuffer.h"
 #include "common.h"
 #include "sdk.h"
@@ -41,7 +41,7 @@ void CThreadCapture::Run()
     auto msg = std::make_shared<CMsg>();
     msg->type = MSG_ALSA_INIT_FINISH;
     msg->nInt1 = 1;
-    CService::GetInstance()->Push(msg);
+    g_SDKServer.Push(msg);
 
     CThreadDevice::Run();
 
@@ -69,7 +69,7 @@ bool CThreadCapture::CopyData(unsigned char * pData, int nFrames)
 {
     int block = m_nBitsPerSample/8;
     int needlen = ED1AudioFrameSampleCount*block;
-    static float fMinVol = CService::GetInstance()->m_fMicADC
+    static float fMinVol = g_SDKServer.m_fMicADC
             *CCommon::dB2FloatScale(-60.0f);
 
 #ifdef _MSC_VER

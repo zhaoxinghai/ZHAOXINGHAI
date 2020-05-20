@@ -2,7 +2,7 @@
 #include "msgbase.h"
 #include "msgsynctime.h"
 #include "common.h"
-#include "callback.h"
+#include "sdkcallback.h"
 #include "sdk.h"
 #include "service.h"
 
@@ -23,7 +23,7 @@ void CMsgSyncTime::OnRespond(unsigned char* pBuf, const int len)
 
     unsigned char *p = pBuf;
 
-    CDataTimeResult ret;
+    CTimeSyncResult ret;
   
     ret.datatime.Sec = *p;
     p++;
@@ -42,9 +42,9 @@ void CMsgSyncTime::OnRespond(unsigned char* pBuf, const int len)
 
     ret.datatime.Year = ReadLONG(p);
 
-    if (m_pSystem->m_Node.nNode != CService::GetInstance()->GetNode())
+    if (m_pSystem->m_Node.nNode != g_SDKServer.GetNode())
     {
-        CService::GetInstance()->ExcuteCallback(&ret);
+        g_SDKServer.ExcuteCallback(&ret);
     }
 }
 

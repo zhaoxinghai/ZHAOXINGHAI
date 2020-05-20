@@ -4,7 +4,7 @@
 
 CMsgBase::CMsgBase(CTSystem* pSys)
 {
-    //m_ProtocolVersion = CService::GetInstance()->GetProtocolVersion();
+    //m_ProtocolVersion = g_SDKServer.GetProtocolVersion();
     m_pSystem = pSys;
     m_Mid = 0;
     m_SubMid = 0;

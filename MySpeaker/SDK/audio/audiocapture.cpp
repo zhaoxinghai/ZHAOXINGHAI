@@ -6,7 +6,7 @@
 #include "define.h"
 #include "service.h"
 #include "routemanager.h"
-#include "callback.h"
+#include "sdkcallback.h"
 
 CAudioCapture::CAudioCapture(e_CAPTURE_TYPE type,int nPort)
 {
@@ -17,7 +17,7 @@ CAudioCapture::CAudioCapture(e_CAPTURE_TYPE type,int nPort)
 
     m_className = "CAudioCapture";
     m_nPreSignalRemain = 0;
-    m_pThreadDevice = CService::GetInstance()->GetThreadDevice(true, m_nPort);
+    m_pThreadDevice = g_SDKServer.GetThreadDevice(true, m_nPort);
     m_Pcmbuffer.SetSize(418*100);
     m_PcmBufferOut.SetSize(418*100);
 
@@ -28,7 +28,7 @@ CAudioCapture::CAudioCapture(e_CAPTURE_TYPE type,int nPort)
 CAudioCapture::~CAudioCapture()
 {
     MicroSignl(false);
-    CService::GetInstance()->m_routeManager.RemoveChannel(m_rtpChannel);
+    g_SDKServer.m_routeManager.RemoveChannel(m_rtpChannel);
 }
 
 void CAudioCapture::Run()
@@ -298,7 +298,7 @@ bool CAudioCapture::GetGongAdpFrame(unsigned char* pAdpData)
         pMsg->type = MSG_PLAY_INDEX;
         pMsg->nInt1 = m_chProcess;
         pMsg->nInt2 = m_nSrcIndex;
-        CService::GetInstance()->Push(pMsg);
+        g_SDKServer.Push(pMsg);
     }
     return true;
 }
@@ -348,14 +348,15 @@ bool CAudioCapture::GetCaptureAdpFrame(unsigned char* pAdpData)
 
 void CAudioCapture::MicroSignl(bool bMic)
 {
+    /*
     if (bMic != m_bMicopen)
     {
         m_bMicopen = bMic;
         CMicResult ret;
-        ret.chProcess = m_chProcess;
+        ret.nProcess = m_chProcess;
         ret.bMicOpen = bMic;
         ret.nPort = m_nPort;
-        CService::GetInstance()->ExcuteCallback(&ret);
+        g_SDKServer.ExcuteCallback(&ret);
 
         //current play index
         if (bMic)
@@ -364,9 +365,9 @@ void CAudioCapture::MicroSignl(bool bMic)
             pMsg->type = MSG_PLAY_INDEX;
             pMsg->nInt1 = m_chProcess;
             pMsg->nInt2 = m_bHaveGong?1:0;
-            CService::GetInstance()->Push(pMsg);
+            g_SDKServer.Push(pMsg);
         }
-    }
+    }*/
 }
 
 void CAudioCapture::SetVARecord(bool bRecord)

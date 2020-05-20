@@ -154,7 +154,7 @@ void CAudioJob::Finish()
     auto pMsg = std::make_shared<CMsg>();
     pMsg->type = MSG_AUDIO_FINISH;
     pMsg->pointer = this;
-    CService::GetInstance()->Push(pMsg);
+    g_SDKServer.Push(pMsg);
 };
 
 void CAudioJob::FinishPause()
@@ -166,12 +166,12 @@ void CAudioJob::FinishPause()
     {
         LOG_ERROR("Audiojob Error: %d", m_error);
     }
-    if (!CService::GetInstance()->IsExit())
+    if (!g_SDKServer.IsExit())
     {
         auto pMsg = std::make_shared<CMsg>();
         pMsg->type = MSG_AUDIO_FINISH_PAUSE;
         pMsg->pointer = this;
-        CService::GetInstance()->Push(pMsg);
+        g_SDKServer.Push(pMsg);
     }
 }
 
@@ -500,7 +500,7 @@ void CAudioJob::SendPreSignal(bool bPlay)
         pMsg->nInt1 = m_chProcess;
         pMsg->usedpriority.bUsed = bPlay;
         pMsg->usedpriority.nRtpChannel = m_rtpChannel;
-        CService::GetInstance()->Push(pMsg);
+        g_SDKServer.Push(pMsg);
     }
 }
 
@@ -520,7 +520,7 @@ void CAudioJob::SendAudioSignal(bool bPlay)
         pMsg->nInt1 = m_chProcess;
         pMsg->usedpriority.bUsed = bPlay;
         pMsg->usedpriority.nRtpChannel = m_rtpChannel;
-        CService::GetInstance()->Push(pMsg);
+        g_SDKServer.Push(pMsg);
     }
 }
 

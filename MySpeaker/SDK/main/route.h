@@ -2,13 +2,11 @@
 #ifndef ROUTE_H
 #define ROUTE_H
 
-#include "d1system.h"
-#include "connection.h"
-#include "callback.h"
-#include "audiojob.h"
-#include "routemanager.h"
+#include "topsystem.h"
+#include "sdkconnect.h"
+#include "sdkcallback.h"
 #include "msgconnection.h"
-#include "msgconnectrequest.h"
+#include "msgid.h"
 
 enum e_ROUTE_TYPE
 {
@@ -17,9 +15,29 @@ enum e_ROUTE_TYPE
     ROUTE_REMOTE
 };
 
-struct t_AudioDestRoute : public t_AudioDest
+enum CONSTATE
 {
-    t_AudioDestRoute()
+    CON_FULL_CONNECT = 0,
+    CON_PARTLY_CONNECT,
+    CON_INTERRUPTED,
+    CON_RECONNECT_POSSIBLE,
+    CON_DIS_CONNECT,
+    CON_UNKNOW
+};
+
+struct t_ActivateRet
+{
+    CONSTATE e_ConState;
+    int      nErrorCode;
+    int      nRequest;
+    int      nProcess;
+    int      nRepeatIndex;
+    int      nPlayIndex;
+};
+
+struct t_DestinationRoute : public t_Destination
+{
+    t_DestinationRoute()
     {
         nNoCheckSeconds = 0;
         nRequestSeconds = 0;
@@ -28,10 +46,9 @@ struct t_AudioDestRoute : public t_AudioDest
         bRequest = false;
         eRequest = CON_ACTIVATE;
     }
-    t_AudioDestRoute(const t_AudioDest &dest)
+    t_DestinationRoute(const t_Destination &dest)
     {
-        this->Sys = dest.Sys;
-        this->Type = dest.Type;
+        //this->Sys = dest.nNode;
         this->vOutputPort = dest.vOutputPort;
 
         nRequestSeconds = 0;
@@ -42,247 +59,65 @@ struct t_AudioDestRoute : public t_AudioDest
         eRequest = CON_ACTIVATE;
     }
     bool             bRequest;
-    e_REQUEST        eRequest;
+    e_CONNECT_REQUEST eRequest;
     int              nRequestSeconds;
 
     bool             bActivate;
     bool             bDeActivate;
     int              nNoCheckSeconds;
-    CActivateResult  ret;
+    t_ActivateRet    ret;
 };
 
-class CRouteManager;
-
-class CRouteBase
+class CRoute
 {
 public:
-    CRouteBase() {};
-    virtual ~CRouteBase() {};
-
-	//protocol response
-	virtual void OnActivate(int nNode, CActivateResult &ret) = 0;
-	virtual void OnDeActivate(int nNode,CActivateResult &ret) = 0;
-	virtual void OnInterrupt(int nNode, CActivateResult &ret) = 0;
-	virtual void OnReActivate(int nNode, CActivateResult &ret) = 0;
-	virtual void OnRouteState(int nNode, CActivateResult &ret) = 0;
-
-	virtual void OnRouteState(CONSTATE conState) = 0;
-	virtual void EverySecond() = 0;
-};
-
-class CRoute : public CRouteBase
-{
-public:
-	CRoute(CActivate* pA);
+	CRoute(CAnnouncement* pA);
 	virtual ~CRoute();
+
+    virtual void OnActivate(int nNode, t_ActivateRet ret);
+    virtual void OnDeActivate(int nNode, t_ActivateRet ret);
+    virtual void OnInterrupt(int nNode, t_ActivateRet ret);
+    virtual void OnReActivate(int nNode, t_ActivateRet ret);
 
     //for local activate
     virtual void Activate();
-	virtual void DeActivate();
-    virtual void BeCheckRoute(unsigned short chRequest);
-    virtual void EverySecond();
-
-    virtual void CurrentPlayIndex(int /*nIndex*/) {};
-
     virtual void ActivateNode(int nNode);
-    void InterruptNode(int nNode);
-    void ReActivateNode(int nNode);
-    void DeActivateNode(int nNode);
+	virtual void DeActivate();
+    virtual void BeCheckRoute(int nRequest);
+    virtual void EverySecond();
+    virtual void OnRouteState(int nNode,t_ActivateRet ret);
+    virtual void OnRouteState(CONSTATE conState);
+
+    //virtual void CurrentPlayIndex(int /*nIndex*/) {};
+    e_ROUTE_TYPE GetType();
 
     bool IsDisConnect();
-    e_ROUTE_TYPE GetType();
     bool IsRtpOnly();
-    int GetRtpNode();
-    int GetRtpChannel();
     bool IsReconnect();
-    void UpdateResult(int nNode, CActivateResult &ret, e_RESPONE response);
+    void UpdateResult(int nNode, t_ActivateRet ret, int response);
 
-    void GetSource(std::string &strPre,std::string &strSrc,bool bStart);
-    void GetDest(std::string szDest[]);
-    void GetDestRtp(std::string szDest[]);
-    void GetDestNet(std::string szDest[]);
+    bool                  m_bJobFinish;
+    t_ActivateRet         m_RouteResult;
+    CAnnouncement         m_Activate;
 
-    static std::string GetState(CONSTATE conState);
-    static std::string GetPresignal(int nPre);
-
-    CRouteManager        *m_pData;
-    CActivateResult       m_RouteResult;
-    CActivate*            m_pActivate;
-    std::vector<t_AudioDestRoute>  m_vDest;
-
-    bool m_bJobFinish;
-    int  m_nPort;
+    std::vector<t_DestinationRoute>  m_vDest;
 
 protected:
-
-    // bit 0
-    bool IsPartlyMode();
+    bool IsPartMode();
     bool IsFullMode();
 
-    // bit 5
-    bool IsReconnectRequest();
-
-    //job state
-    bool UpdateJob(CONSTATE &conState);
+    bool UpdateJob(CONSTATE&conState);
 
     //get the dest
-    t_AudioDestRoute* GetDestination(int nNode);
+    t_DestinationRoute* GetDestination(int nNode);
+    std::string GetState(CONSTATE conState);
 
     e_ROUTE_TYPE   m_eType;
-    bool           m_bRtpOnly;
-    int            m_nRtpNode;
-    int            m_nRtpChannel;
 
     //calltime
     int            m_nCalltime;
-    bool           m_bPause;
     bool           m_bJobStarted;
     long long      m_lStartedTime;
-};
-
-//network activate
-class CRouteNetwork : public CRoute
-{
-public:
-	CRouteNetwork(int nNode,CActivate* pA);
-    virtual ~CRouteNetwork();
- 
-    virtual void Activate();
-    virtual void ActivateNode(int nNode);
-
-    virtual void OnActivate(int nNode, CActivateResult &ret);
-    virtual void OnDeActivate(int nNode,CActivateResult &ret);
-    virtual void OnInterrupt(int nNode, CActivateResult &ret);
-    virtual void OnReActivate(int nNode, CActivateResult &ret);
-    virtual void OnRouteState(int nNode, CActivateResult &ret);
-
-    virtual void OnRouteState(CONSTATE conState);
-    virtual void EverySecond();
-
-    void NetworkGongSignal(int nSourceIndex);
-
-    //network system
-    CTSystem     *m_pNetSystem;
-    bool           m_bPresignal;
-};
-
-
-//this is local play activate
-class CRouteLocal : public CRoute
-{
-public:
-	CRouteLocal(CActivate* pA);
-	virtual ~CRouteLocal();
-
-    virtual void Activate();
-
-    virtual void OnActivate(int nNode, CActivateResult &ret);
-    virtual void OnDeActivate(int nNode,CActivateResult &ret);
-    virtual void OnInterrupt(int nNode, CActivateResult &ret);
-    virtual void OnReActivate(int nNode, CActivateResult &ret);
-    virtual void OnRouteState(int nNode, CActivateResult &ret);
-
-    virtual void OnRouteState(CONSTATE conState);
-    virtual void EverySecond();
-
-    virtual bool CreateAudioJob();
-
-    void OnNodeState(int nNode,CActivateResult &ret);
-    void OnActivateFull(int nNode, CActivateResult &ret);
-    void OnActivatePart(int nNode, CActivateResult &ret);
-
-    //interrupt and restore
-    void InterruptInput();
-    bool RestoreInput();
-	void ReActivateExcept(int nNode);
-
-    void OnGroupState();
-    bool ResetInput(CONSTATE conState);
-
-    bool IsInterrupt();
-
-    int   m_nInterruptdom;
-    bool  m_bInputConnect;
-    bool  m_bCreateJob;
-
-    bool  m_bInputInterrupt;
-    bool  m_bDelayActivate;   //the input is using, delay activate
-};
-
-
-//this is remote activate (receive)
-class CRouteRemote : public CRouteLocal
-{
-public:
-    CRouteRemote(int nNode, CActivate* pA);
-    virtual ~CRouteRemote();
-    
-    void BeActivate();
-    void BeDeActivate();
-    void BeInterrupt();
-    void BeReActivate(t_AudioSrc &src);
-    void BeRouteStatus();
-
-    //only remote have this function
-    void OnCheckRoute();
-  
-    virtual void OnRouteState(CONSTATE conState);
-    virtual void EverySecond();
-    virtual bool CreateAudioJob();
-    virtual void CurrentPlayIndex(int nIndex);
-
-    //output conflict,interrupt
-    void InterruptOutput(std::vector<int> &vConflictPort);
-
-    //output restore
-    bool RestoreOutput();
-    bool IsNeed2Restore();
-
-    std::vector<t_Output>  m_vOutput;
-    CTSystem             *m_pSystem;
-
-protected:
-    //is rtp activate
-    bool IsRtpActivate();
-    int GetPhysicalPort();
-
-    bool IsOutputExist(std::vector<int> &vOutput);
-
-    //remote audio source
-    void BeActivateRtp();
-    void ActivateOutput();
-
-    void OnOutputGroupState();
-
-    //local audio source
-    void BeActivateLocal();
-
-    void GetOutput(std::vector<int> &vOutput);
-    bool ReleaseOutput();
-    bool IsAllOutputCanUsed();
-    bool IsPartNewOutputCanUsed();
-    bool IsOutputConflict();
-
-    //local audio source
-	void BeActivatePhysical();
-	void BeActivateVirtual();
-
-	void CopyParameter(CActivateMicr* pMic);
-    void GetIOMAP(std::vector<t_FILEMAP> &vPath);
-	
-    void InterruptOutputPartly(std::vector<int> &vConflictPort);
-    void InterruptOutputFull();
-
-    bool RestoreOutputFull();
-    bool RestoreOutputPartly();
-    void TryToConnect();
-
-    //no feedback for 3 times(30 seconds)
-    int          m_nCheckTimes;    
-    int          m_nTimerCount10;
-
-    bool         m_bBeInterrupt;
-    e_RESPONE    m_eRespone;
 };
 
 #endif

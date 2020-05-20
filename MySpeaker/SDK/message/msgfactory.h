@@ -2,16 +2,15 @@
 #ifndef MESSAGE_FACTORY_H
 #define MESSAGE_FACTORY_H
 
-#include "predefine.h"
-#include "callback.h"
-#include "msgsysstatus.h"
+#include "sdkdefine.h"
+#include "sdkcallback.h"
+#include "msglifesignal.h"
 #include "msgconnection.h"
+#include "msgconnectrequest.h"
 #include "msgcommon.h"
-#include "msgdevice.h"
+#include "msgvolume.h"
 #include "msgcheckroute.h"
-#include "msgdevice.h"
-#include "msgusagereport.h"
-#include "msgsysstatus.h"
+#include "msgbusystate.h"
 #include "msgsynctime.h"
 #include "mylog.h"
 

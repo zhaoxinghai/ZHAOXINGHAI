@@ -2,7 +2,7 @@
 #ifndef MESSAGE_SYNCTIME_H
 #define MESSAGE_SYNCTIME_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "msgbase.h"
 
 class CMsgSyncTime : public CMsgBase

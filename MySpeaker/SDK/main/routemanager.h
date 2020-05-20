@@ -2,18 +2,20 @@
 #ifndef ROUTE_MANAGER_H
 #define ROUTE_MANAGER_H
 
-#include "predefine.h"
-#include "connection.h"
+#include "sdkdefine.h"
+#include "sdkconnect.h"
 #include "audioplay.h"
 #include "audiocapture.h"
 #include "audioreceive.h"
-#include "d1system.h"
+#include "topsystem.h"
 #include "threadrecv.h"
 #include "threadsend.h"
 #include "threadaccept.h"
 #include "threadtimer.h"
 #include "define.h"
-#include "route.h"
+#include "routelocal.h"
+#include "routeremote.h"
+#include "routenetwork.h"
 
 class CRoute;
 class CRouteLocal;
@@ -54,8 +56,8 @@ public:
     //by the route's process id
     CRoute* GetRouteByProcess(int chProcess);
     CRoute* GetRouteByProcessRequest(int chProcess,int chRequest);
-    bool IsRequestExist(int nNode,int chRequest);
-    bool IsRequestFull();
+    
+    CRouteRemote* GetRemoteRoute(int nNode,int chRequest);
 
     //by the result
     CRoute* GetRouteByRequest(int chRequest);

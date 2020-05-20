@@ -13,6 +13,6 @@ void CThreadTimer::Run()
 
     	auto pMsg = std::make_shared<CMsg>();
         pMsg->type = MSG_EVERY_200_MINISECOND;
-    	CService::GetInstance()->Push(pMsg);
+    	g_SDKServer.Push(pMsg);
     }
 }

@@ -2,7 +2,7 @@
 #ifndef THREAD_CONNECT_H
 #define THREAD_CONNECT_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "mythread.h"
 
 //for tcp reconnect

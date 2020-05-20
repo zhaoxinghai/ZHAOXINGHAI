@@ -1,6 +1,6 @@
 
 #include "transport.h"
-#include "d1system.h"
+#include "topsystem.h"
 #include "threadsend.h"
 #include "service.h"
 #include "common.h"
@@ -192,21 +192,19 @@ void CTransport::SendBroadcast(CMsgBase* pMsg,bool bLifeSignal)
     std::shared_ptr<t_SendMsg> Msg = std::make_shared<t_SendMsg>();
     Msg->bBroadcast = true;
 
-    CService* pSer = CService::GetInstance();
     std::string strAddress;
     if(bLifeSignal)
     {
-        strAddress = CCommon::StrFormat("%d.255.255.255",pSer->m_nBaseAddress);
+        strAddress = CCommon::StrFormat("%d.255.255.255",g_SDKServer.m_nBaseAddress);
     }
     else
     {
-        strAddress = CCommon::StrFormat("%d.255.255.254",pSer->m_nBaseAddress);
+        strAddress = CCommon::StrFormat("%d.255.255.254", g_SDKServer.m_nBaseAddress);
     }
 
     strncpy(Msg->szIP, strAddress.c_str(),sizeof(Msg->szIP));
     GeneralMsgBuffer(pMsg, Msg->szData, Msg->len);
-    pSer->SendMsg(Msg);
-    pSer->TCPBroadcast(pMsg);
+    g_SDKServer.SendMsg(Msg);
 }
 
 void CTransport::Send(CMsgBase* pMsg)
@@ -219,7 +217,7 @@ void CTransport::Send(CMsgBase* pMsg)
     Msg->sock = m_pSystem->m_sock;
     Msg->bTCP = m_pSystem->m_IsTCP;
     strncpy(Msg->szIP, m_pSystem->m_Node.strIP.c_str(),sizeof(Msg->szIP)-1);
-    CService::GetInstance()->SendMsg(Msg);
+    g_SDKServer.SendMsg(Msg);
 }
 
 void CTransport::GeneralMsgBuffer(const CMsgBase* pMsg, char* pBuf, int &len)
@@ -230,7 +228,7 @@ void CTransport::GeneralMsgBuffer(const CMsgBase* pMsg, char* pBuf, int &len)
     std::vector<unsigned char> vData;
 
     //node
-    PushInt(vData,CService::GetInstance()->GetNode());
+    PushInt(vData,g_SDKServer.GetNode());
 
     //mid
     PushInt(vData, pMsg->GetMid());

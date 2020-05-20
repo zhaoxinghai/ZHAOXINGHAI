@@ -3,9 +3,9 @@
 #define DEFINE_H
 
 #include <assert.h>
-#include "callback.h"
+#include "sdkcallback.h"
 #include "device.h"
-#include "connection.h"
+#include "sdkconnect.h"
 #include "mysocket.h"
 
 //audio dsp is double channel
@@ -25,10 +25,8 @@
 #define MSG_DEVICE_VOLUME_AJUST             13
 
 //network message
-#define MSG_SOCK_CONNECT                    33
 #define MSG_SOCK_DISCONNECT                 34
 #define MSG_SOCK_UDP_RECV                   35
-#define MSG_SOCK_TCP_RECV                   36                  
 
 //audiojob message
 #define MSG_AUDIO_FINISH                    37
@@ -55,7 +53,6 @@
 
 #define MSG_SEND_THREAD_RUN                 61
 #define MSG_AUDIO_CONTROL                   62
-#define MSG_TEXT_OUT                        63
 #define MSG_VOL_REPLY                       64
 
 #define MSG_LAMP_TEST                       68
@@ -102,7 +99,7 @@ public:
         t_DateTime     datatime;
         t_UsedPriority usedpriority;
         float          fVolume;
-        t_VDevice      device;
+        //t_VDevice      device;
         t_VolReply     volreply;
         t_VLANConfig   vlanconfig;
     };

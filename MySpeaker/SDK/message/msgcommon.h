@@ -2,7 +2,7 @@
 #ifndef MESSAGE_ASKVERSION_H
 #define MESSAGE_ASKVERSION_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "msgbase.h"
 
 class CMsgCommon : public CMsgBase

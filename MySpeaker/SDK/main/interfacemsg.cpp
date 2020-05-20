@@ -7,12 +7,12 @@
 #include "mylog.h"
 #include "common.h"
 #include "routemanager.h"
-#include "paerror.h"
+#include "sdkerror.h"
 #include "sdk.h"
 #include "msgcommon.h"
 #include "msgsynctime.h"
 #include "msgconnection.h"
-#include "msgdevice.h"
+#include "msgvolume.h"
 #include "device.h"
 #include "public.h"
 
@@ -58,7 +58,7 @@ bool CInterface::RunMessage(CMsg * pMsg)
     case MSG_NORMAL_ANNOUNCEMENT:
     {
         int nNode = pMsg->nInt1;
-        CActivate* p = (CActivate*)pMsg->pointer;
+        CAnnouncement* p = (CAnnouncement*)pMsg->pointer;
         CInterface::NormalAnnouncement(nNode,p);
 
         delete p;
@@ -68,7 +68,7 @@ bool CInterface::RunMessage(CMsg * pMsg)
     }
     case MSG_LOCAL_PLAY_ANNOUNCEMENT:
     {
-        CActivatePlay* p = (CActivatePlay*)pMsg->pointer;
+        CAnnouncement* p = (CAnnouncement*)pMsg->pointer;
         CInterface::LocalPlayAnnouncement(p);
 
         delete p;
@@ -78,7 +78,7 @@ bool CInterface::RunMessage(CMsg * pMsg)
     }
     case MSG_LOCAL_MIC_ANNOUNCEMENT:
     {
-        CActivateMicr* p = (CActivateMicr*)pMsg->pointer;
+        CAnnouncement* p = (CAnnouncement*)pMsg->pointer;
         CInterface::LocalMicrAnnouncement(p);
 
         delete p;
@@ -97,19 +97,9 @@ bool CInterface::RunMessage(CMsg * pMsg)
         CInterface::LocalRecord(pMsg->nInt1,pMsg->nInt2, strPath);
         break;
     }
-    case MSG_TEXT_OUT:
-    {
-        std::string strText(pMsg->szbuffer);
-        CTSystem* pSys = CService::GetInstance()->GetTCPD1SystemBySock(pMsg->socket);
-        if(pSys != NULL && pSys->IsConnect())
-        {
-            pSys->TextOutput(strText);
-        }
-        break;
-    }
     case MSG_STOP_LOCAL_RECORD:
     {
-        int nChProcess = CService::GetInstance()->m_routeManager.StopRecord(pMsg->nInt1);
+        int nChProcess = g_SDKServer.m_routeManager.StopRecord(pMsg->nInt1);
         LOG_DEBUG("%d StopRecord,ID %d",nChProcess,pMsg->nInt1);
         break;
     }
@@ -121,7 +111,7 @@ bool CInterface::RunMessage(CMsg * pMsg)
     case MSG_VOLUME_AJUST:
     {
         float fScale = CCommon::dB2FloatScale(pMsg->fVolume);
-        CService::GetInstance()->m_routeManager.VolumeAjustAudio(pMsg->nInt1, fScale);
+        g_SDKServer.m_routeManager.VolumeAjustAudio(pMsg->nInt1, fScale);
         break;
     }
     case MSG_VOLUME_AJUST_PORT:
@@ -136,7 +126,7 @@ bool CInterface::RunMessage(CMsg * pMsg)
         bool bAction = pMsg->nInt2==1 ? true:false;
         std::vector<t_TL> *p = (std::vector<t_TL>*)pMsg->pointer;
         
-        CTSystem* pSys = CService::GetInstance()->GetD1System(nNode);
+        CTSystem* pSys = g_SDKServer.GetD1System(nNode);
         if (pSys)
         {
             CMsgCommon msg(pSys);
@@ -150,7 +140,7 @@ bool CInterface::RunMessage(CMsg * pMsg)
     */
     case MSG_STOP_ALL_AUDIO:
     {
-        CService::GetInstance()->m_routeManager.StopAllAudio();
+        g_SDKServer.m_routeManager.StopAllAudio();
         break;
     }
     default:
@@ -164,6 +154,7 @@ bool CInterface::RunMessage(CMsg * pMsg)
 
 void CInterface::SetVolume(bool bCapture,int port,float fVolume)
 {
+    /*
     CService* pSer = CService::GetInstance();
 
     float fScale = CCommon::dB2FloatScale(fVolume);
@@ -193,44 +184,42 @@ void CInterface::SetVolume(bool bCapture,int port,float fVolume)
         {
             pSer->m_fVolumeLineOut = fScale;
         }
-    }
+    }*/
 }
 
 void CInterface::SyncDataTime(t_DateTime* mytime)
 {
-    //CMsgSyncTime Msg(CService::GetInstance()->GetSelfD1System());
+    //CMsgSyncTime Msg(g_SDKServer.GetSelfD1System());
     //Msg.SyncDataTime(mytime);
 }
 
-void CInterface::NormalAnnouncement(int nNode,CActivate *pActivate)
+void CInterface::NormalAnnouncement(int nNode,CAnnouncement *pActivate)
 {
-    CActivateResult ret;
-    ret.chProcess = pActivate->chProcess;
-    ret.e_ConState = CON_DIS_CONNECT;
-
-    CTSystem *pSystem = CService::GetInstance()->GetD1System(nNode);
+    CTSystem *pSystem = g_SDKServer.GetD1System(nNode);
     if (pSystem == NULL)
     {
+        CAnnouncementResult ret;
+        ret.nProcess = pActivate->nProcess;
+        ret.eCallState = CALL_DIS_CONNECT;
         ret.nErrorCode = ERROR_SYSTEM_NOEXIST;
         ret.strErrorDesc = "system not exist";
-        LOG_ERROR("%d %s", ret.chProcess, ret.strErrorDesc.c_str());
-        CService::GetInstance()->ExcuteCallback(&ret);
+        LOG_ERROR("%d %s", ret.nProcess, ret.strErrorDesc.c_str());
+        g_SDKServer.ExcuteCallback(&ret);
         return;
     }
     //a new route
     auto pRoute = new CRouteNetwork(nNode,pActivate);  //checked
-    CService::GetInstance()->m_routeManager.AddRoute(pRoute);
+    g_SDKServer.m_routeManager.AddRoute(pRoute);
     pRoute->Activate();
 }
 
-void CInterface::LocalPlayAnnouncement(CActivatePlay *pActivate)
+void CInterface::LocalPlayAnnouncement(CAnnouncement *pActivate)
 {
     /*
-    CService* pSer = CService::GetInstance();
-    if(pActivate->bPreListen)
+    if(pActivate->Property.bPreListen)
     {
-        CActivateResult ret;
-        ret.chProcess = pActivate->chProcess;
+        CAnnouncementResult ret;
+        ret.nProcess = pActivate->nProcess;
 
         if(pSer->m_routeManager.GetCapturePlayAudio()>=THREAD_POOL_COUNT)
         {
@@ -246,7 +235,7 @@ void CInterface::LocalPlayAnnouncement(CActivatePlay *pActivate)
         //start play
         CAudioPlay* Job = new CAudioPlay(LOCAL_ADP2LISTEN);  //checked
 
-        Job->EnableSecurity(CService::GetInstance()->m_bEnableSecurity);
+        Job->EnableSecurity(g_SDKServer.m_bEnableSecurity);
         Job->SetRepeatCount(pActivate->nRepeatCount);
 
         t_FILEMAP prefile;
@@ -266,14 +255,14 @@ void CInterface::LocalPlayAnnouncement(CActivatePlay *pActivate)
         Job->VolumeAjustSG(pSer->m_VolumeScaleSG);
         Job->VolumeAjustEG(pSer->m_VolumeScaleEG);
         Job->SetRtpChannel(pActivate->nRtpChannel);
-        Job->SetChProcess(pActivate->chProcess);
+        Job->SetChProcess(pActivate->nProcess);
 
         pSer->m_routeManager.AddAudio(Job);
 
-        pSer->m_routeManager.AllocatePort(pActivate->chProcess,
+        pSer->m_routeManager.AllocatePort(pActivate->nProcess,
                 false, vPort[0], 1,pActivate->nRtpChannel);
 
-        pSer->m_routeManager.StartAudio(pActivate->chProcess);
+        pSer->m_routeManager.StartAudio(pActivate->nProcess);
 
         ret.e_ConState = CON_FULL_CONNECT;
         pSer->ExcuteCallback(&ret);
@@ -287,10 +276,10 @@ void CInterface::LocalPlayAnnouncement(CActivatePlay *pActivate)
     */
 }
 
-void CInterface::LocalMicrAnnouncement(CActivateMicr *pActivate)
+void CInterface::LocalMicrAnnouncement(CAnnouncement *pActivate)
 {
     auto pRoute = new CRouteLocal(pActivate);  //checked
-    CService::GetInstance()->m_routeManager.AddRoute(pRoute);
+    g_SDKServer.m_routeManager.AddRoute(pRoute);
     pRoute->Activate();
 }
 
@@ -298,57 +287,57 @@ void CInterface::StopAnnouncement(int chProcess)
 {
     LOG_DEBUG("StopAnnouncement %d",chProcess);
 
-    CRoute *pRoute = CService::GetInstance()->m_routeManager.GetRouteByProcess(chProcess);
+    CRoute *pRoute = g_SDKServer.m_routeManager.GetRouteByProcess(chProcess);
     if (pRoute)
     {
         pRoute->DeActivate();
         pRoute->OnRouteState(CON_DIS_CONNECT);
-        CService::GetInstance()->m_routeManager.CleanRoute();
+        g_SDKServer.m_routeManager.CleanRoute();
     }
     else
     {
-        CService::GetInstance()->m_routeManager.StopAudio(chProcess);
+        g_SDKServer.m_routeManager.StopAudio(chProcess);
     }
 }
 
 void CInterface::LocalRecord(int nRequest,int port,std::string strPath)
 {
     CLocalRecordResult ret;
-    ret.chRequest = nRequest;
+    ret.nRequest = nRequest;
     ret.strFilePath = strPath;
 
-    CService* pSer = CService::GetInstance();
-    if(pSer->m_routeManager.GetCapturePlayAudio()>=THREAD_POOL_COUNT)
+    if(g_SDKServer.m_routeManager.GetCapturePlayAudio()>=THREAD_POOL_COUNT)
     {
         LOG_DEBUG("LocalRecord,%s","Audio thread pool full");
         ret.nErrorCode = ERROR_THREAD_POOL_FULL;
-        CService::GetInstance()->ExcuteCallback(&ret);
+        g_SDKServer.ExcuteCallback(&ret);
         return;
     }
 
     //allocate port
-    if (CService::GetInstance()->IsPortBusy(true, port))
+    if (g_SDKServer.IsPortBusy(true, port))
     {
-        CService::GetInstance()->m_routeManager.InterruptInput(port);
+        g_SDKServer.m_routeManager.InterruptInput(port);
         
         //is busy?
-        if (CService::GetInstance()->IsPortBusy(true, port))
+        if (g_SDKServer.IsPortBusy(true, port))
         {
             LOG_ERROR("%s","not possible to occur");
             ret.nErrorCode = ERROR_LOCAL_MICROPHONE_BUSY;
-            CService::GetInstance()->ExcuteCallback(&ret);
+            g_SDKServer.ExcuteCallback(&ret);
             return;
         }
     }
-
-    ret.chProcess = PA::GetChProcess();
-    LOG_DEBUG("%d LocalRecord,ID %d",ret.chProcess,ret.chRequest);
+    /*
+    ret.nProcess = SDK_API::GetChProcess();
+    LOG_DEBUG("%d LocalRecord,ID %d",ret.nProcess,ret.nRequest);
     CAudioCapture* pJob = new CAudioCapture(CAPTURE_RECORD, port);  //checked
     pJob->SetRecordPath(strPath);
-    pJob->SetChProcess(ret.chProcess);
-    pJob->SetRecordID(ret.chRequest);
+    pJob->SetChProcess(ret.nProcess);
+    pJob->SetRecordID(ret.nRequest);
 
-    CService::GetInstance()->m_routeManager.AddAudio(pJob);
-    CService::GetInstance()->m_routeManager.AllocatePort(ret.chProcess,true, port, 1, 0);
-    CService::GetInstance()->m_routeManager.StartAudio(ret.chProcess);
+    g_SDKServer.m_routeManager.AddAudio(pJob);
+    g_SDKServer.m_routeManager.AllocatePort(ret.nProcess,true, port, 1, 0);
+    g_SDKServer.m_routeManager.StartAudio(ret.nProcess);
+    */
 }

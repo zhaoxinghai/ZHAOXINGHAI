@@ -8,7 +8,7 @@
 
 std::vector<int> g_vID;
 
-static void CallBackLib(const CResultBase* /*pResult*/)
+static void CallBackLib(const CResult* /*pResult*/)
 {
 }
 
@@ -62,7 +62,7 @@ void helpparam()
     std::cout << "[-priority]     ----priority from 1 or 250,1 is highest"<<std::endl;
 }
 
-void setparam(std::vector<std::string> &vCmd,CActivate* pAct)
+void setparam(std::vector<std::string> &vCmd,CAnnouncement* pAct)
 {
     /*
     std::string str = GetParameter(vCmd,"-g");
@@ -108,7 +108,7 @@ void setparam(std::vector<std::string> &vCmd,CActivate* pAct)
 	//destination
 	for(unsigned int i = 0;i<250;i++)
 	{
-		t_AudioDest dest;
+		t_Destination dest;
 		dest.Sys = i+1;
 
         std::string strNode = CCommon::StrFormat("-d%d",i+1);
@@ -170,9 +170,9 @@ void Command_local(std::vector<std::string> &vCmd)
 		return;
 	}
 
-    CActivatePlay activate;
-    activate.chProcess = PA::GetChProcess();
-    g_vID.push_back(activate.chProcess);
+    CAnnouncementFile activate;
+    activate.nProcess = SDK_API::GetChProcess();
+    g_vID.push_back(activate.nProcess);
 
     //source
 	str = GetParameter(vCmd,"-s");
@@ -193,7 +193,7 @@ void Command_local(std::vector<std::string> &vCmd)
 	}
 
 	setparam(vCmd,&activate);
-    PA::LocalPlayAnnouncement(&activate);
+    SDK_API::LocalPlayAnnouncement(&activate);
     */
 }
 
@@ -207,9 +207,9 @@ void Command_live(std::vector<std::string> &vCmd)
 		return;
 	}
 
-    CActivateMicr activate;
-    activate.chProcess = PA::GetChProcess();
-    g_vID.push_back(activate.chProcess);
+    CAnnouncementMicr activate;
+    activate.nProcess = SDK_API::GetChProcess();
+    g_vID.push_back(activate.nProcess);
 
 
     //source
@@ -219,7 +219,7 @@ void Command_live(std::vector<std::string> &vCmd)
 	activate.nPort = atoi(str.c_str());
 
 	setparam(vCmd,&activate);
-    PA::LocalMicrAnnouncement(&activate);
+    SDK_API::LocalMicrAnnouncement(&activate);
 }
 
 void Command_net(std::vector<std::string> &vCmd)
@@ -232,9 +232,9 @@ void Command_net(std::vector<std::string> &vCmd)
 		return;
 	}
 
-    CActivate activate;
-    activate.chProcess = PA::GetChProcess();
-    g_vID.push_back(activate.chProcess);
+    CAnnouncement activate;
+    activate.nProcess = SDK_API::GetChProcess();
+    g_vID.push_back(activate.nProcess);
 
     //source
 	str = GetParameter(vCmd,"-s");
@@ -260,7 +260,7 @@ void Command_net(std::vector<std::string> &vCmd)
 	str = GetParameter(vCmd,"-n");
 	if(str.length()<=0)
 		return;
-    PA::NormalAnnouncement(atoi(str.c_str()), &activate);
+    SDK_API::NormalAnnouncement(atoi(str.c_str()), &activate);
 }
 
 #ifndef _MSC_VER
@@ -441,7 +441,7 @@ void command(std::vector<std::string> &vCmd)
     {
         for(unsigned int i = 0;i<g_vID.size();i++)
         {
-            PA::StopAnnouncement(g_vID[i]);
+            SDK_API::StopAnnouncement(g_vID[i]);
         }
         g_vID.clear();
     }
@@ -452,46 +452,15 @@ void command(std::vector<std::string> &vCmd)
 
 int main(int count,char** arg)
 {
-#if TEST_M_UDP
-    for(int i = 1;i<127;i++)
-    {
-        printf("Rtp Channel: %d\n",i);
-
-        CMySocket mySock;
-        mySock.Create(SOCK_DGRAM);
-
-        unsigned short port = 10600 + i;
-        std::string strIP = CCommon::StrFormat("225.%d.0.%d",127,i);
-        if (!mySock.Bind(port))
-        {
-            printf("%s","Error Bind");
-            return 1;
-        }
-
-        //set udp address
-        if (!mySock.SetUDPAddress(strIP.c_str(), port))
-        {
-            printf("%s","Error SetUDPAddress");
-            return 1;
-        }
-
-        if (!mySock.JoinGroup(strIP.c_str()))
-        {
-            printf("%s","Error JoinGroup");
-            return 1;
-        }
-
-        CCommon::SleepMinisecond(1000);
-        mySock.LeaveGroup(strIP.c_str());
-        mySock.Close();
-    }
-    return 0;
-#endif
-
 #if TEST_RATE
     Command_samplerate();
     return 0;
 #endif
+
+    if(CCommon::IsMatch(count,arg,"-debug"))
+    {
+        SDK_API::EnableDebug();
+    }
 
 	if(count < 2)
 	{
@@ -501,16 +470,18 @@ int main(int count,char** arg)
 
     std::string strIP = std::string(arg[1]);
 
-    //PA::SetVersion(PROTOCOL_V10);
-    PA::RegisterCallback(CallBackLib);
+    //SDK_API::SetVersion(PROTOCOL_V10);
+    SDK_API::RegisterCallback(CallBackLib);
+    SDK_API::MonitorLifeSignal();
+    SDK_API::MonitorBusyState();
 
     //sound card
     std::vector<int> vPortCh1;
     std::vector<int> vPortCh2;
     vPortCh1.push_back(41);
     vPortCh2.push_back(42);
-    PA::AddSoundCardDevice("default", true, vPortCh1, vPortCh2);
-    PA::AddSoundCardDevice("default", false, vPortCh1, vPortCh2);
+    SDK_API::AddSoundCardDevice("default", true, vPortCh1, vPortCh2);
+    SDK_API::AddSoundCardDevice("default", false, vPortCh1, vPortCh2);
 
     t_Node curNode;
     //curNode.eType = DEVICE_ETCS;
@@ -533,11 +504,8 @@ int main(int count,char** arg)
         Node.strIP = CCommon::StrFormat("%s.%d", strPre.c_str(),Node.nNode);
         vNode.push_back(Node);
     }
-    PA::Init(curNode, vNode);
-    PA::MonitorLifeSignal();
-    PA::MonitorBusyState();
-
-    PA::Run();
+    SDK_API::Init(curNode, vNode);
+    SDK_API::Run();
 
     Command_help();
    
@@ -559,7 +527,7 @@ int main(int count,char** arg)
 
         if (vCmd[0] == "exit")
         {
-            PA::Exit(true);
+            SDK_API::Exit(true);
             break;
         }
         command(vCmd);

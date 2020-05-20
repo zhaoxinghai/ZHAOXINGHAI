@@ -2,7 +2,7 @@
 #ifndef SENDMSG_H
 #define SENDMSG_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "mythread.h"
 #include "mysocket.h"
 #include "device.h"
@@ -42,7 +42,10 @@ public:
     CThreadSend();
     ~CThreadSend();
 
+    void SetPort(int nPort);
+
     virtual void Run();
+
     //send message
     void SendMsg(std::shared_ptr<t_SendMsg> pMsg);
 
@@ -63,6 +66,7 @@ private:
     std::queue<std::shared_ptr<t_SendMsg>>   m_queueMsg;
     CMySocket                           m_sockBroadcast;
     CMySocket                           m_sockUDP;
+    int                                 m_nPort;
 };
 
 #endif

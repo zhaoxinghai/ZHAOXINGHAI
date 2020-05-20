@@ -1,7 +1,7 @@
 ﻿#ifndef __VPAUDIOCORE_D1RTPFRAMELAYER_H__
 #define __VPAUDIOCORE_D1RTPFRAMELAYER_H__
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "d1adpcmcodec.h"
 
 #define ED1RtpPayloadId 39

@@ -2,7 +2,7 @@
 #ifndef THREAD_CAPTURE_H
 #define THREAD_CAPTURE_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "mythread.h"
 #include "cyclebuffer.h"
 #include "threaddevice.h"

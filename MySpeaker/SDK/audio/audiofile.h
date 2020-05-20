@@ -2,7 +2,7 @@
 #ifndef AUDIO_DEF_H
 #define AUDIO_DEF_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "d1adpcmcodec.h"
 #include "cyclebuffer.h"
 

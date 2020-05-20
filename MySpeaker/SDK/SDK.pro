@@ -74,8 +74,8 @@ SOURCES += \
     message/msgconnectrequest.cpp \
     message/msgdevice.cpp \
     message/msgfactory.cpp \
+    message/msglifesignal.cpp \
     message/msgsynctime.cpp \
-    message/msgsysstatus.cpp \
     message/msgusagereport.cpp \
     audio/audiofile.cpp \
     audio/audiocapture2.cpp \
@@ -101,10 +101,9 @@ HEADERS += \
     common/mythread.h \
     include/callback.h \
     include/connection.h \
-    include/detectmemoryleak.h \
     include/device.h \
-    include/paerror.h \
     include/predefine.h \
+    include/sdkerror.h \
     main/d1system.h \
     main/define.h \
     main/interfacemsg.h \
@@ -130,9 +129,9 @@ HEADERS += \
     message/msgconnectrequest.h \
     message/msgdevice.h \
     message/msgfactory.h \
+    message/msglifesignal.h \
     message/msgnews.h \
     message/msgsynctime.h \
-    message/msgsysstatus.h \
     message/msgusagereport.h \
     audio/audiofile.h \
     include/sdk.h

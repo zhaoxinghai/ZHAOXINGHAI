@@ -8,7 +8,7 @@
 #ifndef AUDIO_DEVICE_H
 #define AUDIO_DEVICE_H
 
-#include "predefine.h"
+#include "sdkdefine.h"
 #include "threaddevice.h"
 
 #define  SAMPLING_RATE   48000
