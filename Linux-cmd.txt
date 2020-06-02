@@ -6,7 +6,6 @@ Window: mount -o nolock \\192.168.1.230\nfs x:
 Linux : mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.230:/nfs /mnt
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/
 
-● 查看当前路径 pwd
 ● 文件查找 find [路径] [参数] : find . -name "test.adp" | find / -name "test.adp"
 ● 解压 tar -xvzf test.tar.gz
 ● 压缩 tar -czvf test.tar.gz record.adp
@@ -25,16 +24,10 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/
   #找到动态链接库的路径 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/Linux
   #找到静态库的路径 export LIBRARY_PATH=$LIBRARY_PATH:/MyLib
 ● 软链接命令 ln -s 源目录 目标快捷方式
-● IP地址设置(临时)：
-  ifconfig eth0 192.168.1.100 netmask 255.255.255.0
-● 修改固定IP地址(NPMS)	
-/etc/startup 
-vi /etc/systemd/network/Management.network
 ● 显示进程 ps top 
 show thread:
 top -p "pidof process"
 top -H -p "pidof process"   线
-● 杀死进程 kill 110
 ● aplay与arecord命令
   arecord -c 1 -r 44100 -f S16_LE test.wmv
   aplay test.wmv
@@ -57,27 +50,8 @@ SCU ubuntu:
 2,install ffmpeg-0.5.1.tar.gz
 install busybox
 
-● D1 vlan 配置
-root[0]@DOM-47(192.168.1.47#47) [  3-] >opmode config
-root[0]@DOM-47(192.168.1.47#47) [  4+] >vlancfg -1 0
-root[0]@DOM-47(192.168.1.47#47) [  5+] >opmode normal
-
 ● sudo dd if=./kali.iso of=/dev/sdb
-
-● 串口调试：前3位是黑、白、绿
-
 https://acsjira.honeywell.com/browse/GNP-3081 
-
-RTPCONF
-paproto legacymode 1
-Audio_Flashdisk
-
-
-贵阳机场开会
-ETCS-TTS-protocol
-GNP开会。
-DAL问题调试
-可以修改
 
 SCU查看硬盘空间
 
@@ -86,12 +60,9 @@ sculinux-install.sh
 sculinux-configure.sh
 sculinux-setup.sh
 
-playlilsts配置文件名称变更为playlists
-t_PAChannel增加iTolerance
-t_Zone:output_list变为string
-t_Action:targets变为string
-t_MsgGroup:strSubDeviceIDList变为string
-
+AD下载：
+链接：https://pan.baidu.com/s/19AgRWutT08-fsmaKX7q0lQ 
+提取码：rjvd
 
 ACDC电源：
 5V-2A的13元
@@ -100,3 +71,20 @@ ACDC电源：
 
 音箱：宽155
 音箱：深105
+
+ETCS 功能变更：
+Call的播放由原来的channel-title切换到playlist播放,使用新的配置文件。
+Call增加后置音。
+Call播放时，增加静音间隔功能。
+Call循环播放时，前置音与后置音仅播放一次。
+
+错误状态使用新协议，不使用dvstat
+
+麦克风广播
+本地广播
+临时广播(Local and USB)
+一键广播
+杨声器广播
+播放队列
+计划广播
+分区监听
