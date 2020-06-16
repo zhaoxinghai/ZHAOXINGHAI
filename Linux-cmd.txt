@@ -14,6 +14,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/
 ● 压缩 tar -czvf test.tar.gz record.adp
 ● deb包的安装(cd 到安装包的目录,dpkg -i 安装包名字)
 ● 查看文件内容 cat filename.ext
+● 查看分区 df -h
 ● rpm -ivh test.rpm
 ------------------------------------------------------------------------
 
