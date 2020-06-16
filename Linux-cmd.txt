@@ -1,5 +1,8 @@
 ● ETCS:
 user:root pass:HON*emea&1357 resetpass:2352385087 defaultpass:WELLemea246800
+echo V >/dev/watchdog
+endsignal:
+endSignalData
 
 ● mount: 
 Window: mount -o nolock \\192.168.1.230\nfs x:
@@ -88,3 +91,26 @@ Call循环播放时，前置音与后置音仅播放一次。
 播放队列
 计划广播
 分区监听
+
+新的配置文件：
+D1-11的协议
+ETCS1.4.0-T001手动配置测试文件
+ETCS1.4.0-T001错误检测协议更新
+ETCS1.4.0-T001打包升级
+
+8.5
+
+https://acsjira.honeywell.com/browse/GNP-3422   1     ETCS-1.3.1
+
+https://acsjira.honeywell.com/browse/GNP-3419#  7     ETCS-1.4.0 (GNP-MOV1)
+
+https://acsjira.honeywell.com/browse/GNP-3421   22    ETCS-1.4.1(GuiYang airport)
+
+https://acsjira.honeywell.com/browse/GNP-3508   20    GNP-SIP
+
+UnPlan Job:
+TTS interface keyboard                                                        --10 days
+TTS interface development（Add,Edit,Remove TTS text template).                --6  days
+GuiYang airport for PAServer(Audio monitor and scu audio-logging pre-listen). --20 days
+
+132/m2
