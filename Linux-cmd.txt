@@ -8,6 +8,10 @@ GNP:
 killall run.sh
 killall gnp_app
 
+Litchee
+export PATH=$PATH:/opt/gcc-linaro-6.3.1-2017.02-x86_64_arm-linux-gnueabihf/bin
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- LicheePi_Zero_defconfig
+
 ¡ñ mount: 
 Window: mount -o nolock \\192.168.1.230\nfs x:
 Linux : mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.230:/nfs /mnt

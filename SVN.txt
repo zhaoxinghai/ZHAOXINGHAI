@@ -22,3 +22,6 @@ svn://158.138.48.83/VaPa/PAMMI/trunk
 
 ● DAL protocol
 http://160.221.186.12/index.php/Variodyn_D1/Software/DOM/MCU user:e494950  pass:88229715
+
+● GNP SVN
+https://acssvn.honeywell.com/HBT/HSF/GlobalNotificationProgram/GNP/PAVASystem/Firmware/
