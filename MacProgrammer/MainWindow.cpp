@@ -4,13 +4,6 @@
 
 #pragma comment(lib, "ws2_32.lib" )
 
-#define ETCS_OK               0
-#define ETCS_SOCKET_CREATE    1
-#define ETCS_SOCKET_CON       2
-#define ETCS_SOCKET_RECV      3
-#define ETCS_SOCKET_SEND      4
-#define ETCS_RET_ERROR        5
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -66,8 +59,6 @@ MainWindow::MainWindow(QWidget *parent) :
     D1FirstMac = "";
     D1LastMac = "";
     D1MacPCS = 0;
-    D1State = STATE_NOT_RUN;
-    D1FlashError = 0;
     ui->PushButtonD1Export->setEnabled(false);
     ui->PushButtonD1Startup->setEnabled(false);
 
@@ -954,6 +945,11 @@ void MainWindow::selectDevice(int type)
         break;
     case D_D1_ETCS:
         ui->TabWidgetDevice->setCurrentIndex(2);
+        ui->ComboBoxD1->setCurrentIndex(0);
+        break;
+    case D_D1_INC:
+        ui->TabWidgetDevice->setCurrentIndex(2);
+        ui->ComboBoxD1->setCurrentIndex(1);
         break;
     }
 }
@@ -1000,7 +996,17 @@ int MainWindow::getDeviceType()
         }
         break;
     case 2:
-        DeviceType = D_D1_ETCS;
+        switch(ui->ComboBoxD1->currentIndex())
+        {
+        case 0:
+            DeviceType = D_D1_ETCS;
+            break;
+        case 1:
+            DeviceType = D_D1_INC;
+            break;
+        default:
+            break;
+        }
         break;
     default:
         break;
@@ -1029,6 +1035,9 @@ QString MainWindow::getDeviceTypeStr()
         {
         case 0:
             DeviceType = "D1ETCS";
+            break;
+        case 1:
+            DeviceType = "D1INC";
             break;
         }
         break;
@@ -1796,6 +1805,7 @@ void MainWindow::initD1Config()
             this, SLOT(pushButtonD1StartupClickedSlot(bool)));
 
     D1TimerID = this->startTimer(1000);
+    m_GNPThread->Init(this);
 
     QString Path = "./MacProgrammer.ini";
     QFileInfo File(Path);
@@ -1874,25 +1884,26 @@ void MainWindow::pushButtonD1ExportClickedSlot()
 
 void MainWindow::pushButtonD1StartupClickedSlot(bool checked)
 {
-    if(checked == true && D1State == STATE_NOT_RUN)
+    if(checked == true && m_GNPThread->D1State == STATE_NOT_RUN)
     {
         D1MacIndex = 0;
         D1MacList.clear();
         D1MacList = getValidMacList(D1FirstMac,D1MacPCS,D1ValidByte,D1LowestValidByte);
         if(D1MacList.size() > 0)
         {
-            ETCSSetMac();
+            D1SetMac();
         }
     }
 }
 
-void MainWindow::ETCSSetMac()
+void MainWindow::D1SetMac()
 {
-    D1State = STATE_RUNING;
+    m_GNPThread->D1State = STATE_RUNING;
     ui->PlainTextD1Edit->appendPlainText(QString("正在烧写第%1 PCS,所用Mac为%2.").
                                        arg(D1MacIndex + 1).arg(D1MacList.at(D1MacIndex)));
 
-    HANDLE hThread = ::CreateThread(NULL, 0, MainWindow::ThreadProcETCS,this, 0, NULL);
+    D1DeviceType = getDeviceType();
+    HANDLE hThread = ::CreateThread(NULL, 0, MainWindow::ThreadProcD1,this, 0, NULL);
     CloseHandle(hThread);
 }
 
@@ -1901,137 +1912,30 @@ QStringList MainWindow::getD1ValidMacList()
     return getValidMacList(D1FirstMac,D1MacPCS,D1ValidByte,D1LowestValidByte);
 }
 
-DWORD WINAPI MainWindow::ThreadProcETCS(void* arg)
+DWORD WINAPI MainWindow::ThreadProcD1(void* arg)
 {
     MainWindow* pThis = (MainWindow*)arg;
-
-    //create
-    SOCKET sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (sock != INVALID_SOCKET)
-    {
-        struct sockaddr_in svraddr;
-        svraddr.sin_family = AF_INET;
-        svraddr.sin_addr.s_addr = inet_addr("192.168.1.127");
-        svraddr.sin_port = htons(23);
-        int ret = ::connect(sock, (struct sockaddr *)&svraddr, sizeof(svraddr));
-        if(ret != SOCKET_ERROR)
-        {
-            pThis->ETCSTelnet(sock);
-        }
-        else
-        {
-            pThis->D1FlashError = ETCS_SOCKET_CON;
-        }
-    }
-    else
-    {
-        pThis->D1FlashError = ETCS_SOCKET_CREATE;
-    }
-    closesocket(sock);
-    pThis->D1State = STATE_FINISH;
+    pThis->Run();
     return 0;
 }
 
-void MainWindow::ETCSTelnet(SOCKET sock)
+void MainWindow::Run()
 {
-    //telnet client
-    std::string strBuf;
-    bool bSendCmd = false;
-
-    while (true)
-    {
-        char data = 0;
-        if (recv(sock, &data, 1, 0) != 1)
-        {
-            D1FlashError = ETCS_SOCKET_RECV;
-            break;
-        }
-        strBuf.push_back(data);
-
-        //first login
-        size_t pos = strBuf.find("Logon:");
-        if(pos != std::string::npos)
-        {
-            std::string str = "etcs\r\n";
-            if(!ETCSWrite(sock,str.c_str(), str.length()))
-            {
-                D1FlashError = ETCS_SOCKET_SEND;
-                break;
-            }
-            strBuf.clear();
-            continue;
-        }
-        if (data != '>')
-        {
-            continue;
-        }
-        //first send command
-        if (!bSendCmd)
-        {
-            bSendCmd = true;
-            std::string strSend = std::string("setmac ")
-                    + D1MacList.at(D1MacIndex).toStdString() + std::string("\r\n");
-            if(!ETCSWrite(sock,strSend.c_str(), strSend.length()))
-            {
-                D1FlashError = ETCS_SOCKET_SEND;
-                break;
-            }
-            strBuf.clear();
-            continue;
-        }
-
-        //get the result
-        pos = strBuf.rfind('\n');
-        if(pos != std::string::npos)
-        {
-            strBuf = strBuf.substr(0,pos);
-        }
-        //reselt
-        pos = strBuf.find("OK");
-        if(pos != std::string::npos)
-        {
-            D1FlashError = ETCS_OK;
-        }
-        else
-        {
-            D1FlashError = ETCS_RET_ERROR;
-        }
-        break;
-    }
-}
-
-bool MainWindow::ETCSWrite(SOCKET sock,const char *strWrite,int nWrite)
-{
-    int write = 0;
-    while ( write < nWrite )
-    {
-        if (sock == INVALID_SOCKET)
-            return false;
-
-        int left = nWrite - write;
-        int iWrite = send(sock, strWrite + write, left, 0);
-
-        if (iWrite <= 0 )
-        {
-            return false;
-        }
-        write += iWrite;
-    }
-    return write == nWrite;
+    //m_GNPThread.Run(D1DeviceType,D1FlashError,D1State);
 }
 
 void MainWindow::timerEvent( QTimerEvent *event)
 {
-    if(D1State != STATE_FINISH)
+    if(m_GNPThread->D1State != STATE_FINISH)
     {
         return;
     }
 
-    D1State = STATE_NOT_RUN;
+    m_GNPThread->D1State = STATE_NOT_RUN;
     QMessageBox MsgBox;
     MsgBox.setWindowIcon(QIcon(":/Resource/Title.png"));
 
-    if(D1FlashError == 0)
+    if(m_GNPThread->D1FlashError == 0)
     {
         ui->GroupBoxD1Step->setTitle(QString("进度 %1/%2").arg(D1MacIndex+1).arg(D1MacPCS));
         QFile File("./" + QDate::currentDate().toString("yyyy") + ".log");
@@ -2073,27 +1977,27 @@ void MainWindow::timerEvent( QTimerEvent *event)
         MsgBox.setWindowTitle("警告");
         MsgBox.setIcon(QMessageBox::Warning);
 
-        if(D1FlashError == ETCS_SOCKET_CREATE)
+        if(m_GNPThread->D1FlashError == ETCS_SOCKET_CREATE)
         {
             MsgBox.setText("Socket创建失败，请查看.");
             ui->PlainTextD1Edit->appendPlainText("Socket创建失败,请查看.");
         }
-        else if(D1FlashError == ETCS_SOCKET_CON)
+        else if(m_GNPThread->D1FlashError == ETCS_SOCKET_CON)
         {
             MsgBox.setText("连接到设备失败，请查看.");
             ui->PlainTextD1Edit->appendPlainText("连接到设备失败,请查看.");
         }
-        else if(D1FlashError == ETCS_SOCKET_RECV)
+        else if(m_GNPThread->D1FlashError == ETCS_SOCKET_RECV)
         {
             MsgBox.setText("数据接收错误，请查看.");
             ui->PlainTextD1Edit->appendPlainText("数据接收错误,请查看.");
         }
-        else if(D1FlashError == ETCS_SOCKET_SEND)
+        else if(m_GNPThread->D1FlashError == ETCS_SOCKET_SEND)
         {
             MsgBox.setText("数据发送错误，请查看.");
             ui->PlainTextD1Edit->appendPlainText("数据发送错误,请查看.");
         }
-        else if(D1FlashError == ETCS_RET_ERROR)
+        else if(m_GNPThread->D1FlashError == ETCS_RET_ERROR)
         {
             MsgBox.setText("MAC地址设置失败，请查看.");
             ui->PlainTextD1Edit->appendPlainText("MAC地址设置失败，请查看.");
@@ -2118,17 +2022,17 @@ void MainWindow::timerEvent( QTimerEvent *event)
             return;
         }
         D1MacIndex++;
-        ETCSSetMac();
+        D1SetMac();
         break;
     }
     case QMessageBox::Retry:
     {
-        ETCSSetMac();
+        D1SetMac();
         break;
     }
     default:
     {
-        if(D1FlashError == 0 && D1MacIndex < D1MacList.size())
+        if(m_GNPThread->D1FlashError == 0 && D1MacIndex < D1MacList.size())
         {
             updataD1FirstMac();
             D1MacIndex = 0;

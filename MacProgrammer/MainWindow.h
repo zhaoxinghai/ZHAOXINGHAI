@@ -21,7 +21,8 @@
 #include <QtSql\QtSql>
 #include <QSettings>
 #include <ws2tcpip.h>
-#include "../Include/ProtocolFrame.h"
+#include "ProtocolFrame.h"
+#include "GNPThread.h"
 
 #define D_ProduceMode       0x00
 #define D_ReceivePort       8001
@@ -40,13 +41,14 @@
 #define D_X618NPM                   0x12
 
 #define D_D1_ETCS                   0x20
+#define D_D1_INC                    0x21
 
 #define D_X618SpecialID             0x000011CA
 
 namespace Ui {
     class MainWindow;
 }
-
+class CGNPThread;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -207,27 +209,24 @@ private:
     unsigned int getMacCount(QString macFirst, QString macLast);
 
     //flash mac address
-    void ETCSSetMac();
-    static DWORD WINAPI ThreadProcETCS(void* arg);
-    void ETCSTelnet(SOCKET sock);
-    bool ETCSWrite(SOCKET sock,const char *strWrite,int nWrite);
+    void D1SetMac();
+    static DWORD WINAPI ThreadProcD1(void* arg);
+    void Run();
 
-    enum eRunState
-    {
-        STATE_NOT_RUN,
-        STATE_RUNING,
-        STATE_FINISH
-    };
+public:
 
+
+private:
+    CGNPThread  *m_GNPThread;
     QStringList  D1MacList;
     int          D1ValidByte;
     int          D1LowestValidByte;
     QString      D1FirstMac;
     QString      D1LastMac;
     int          D1MacPCS;
-    eRunState    D1State;
+
+    int          D1DeviceType;
     int          D1MacIndex;
-    int          D1FlashError;
     int          D1TimerID;
 };
 

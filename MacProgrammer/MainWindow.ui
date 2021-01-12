@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>657</width>
-    <height>538</height>
+    <height>612</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -772,6 +772,11 @@ p, li { white-space: pre-wrap; }
                <item>
                 <property name="text">
                  <string>ETCS</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>INC</string>
                 </property>
                </item>
               </widget>

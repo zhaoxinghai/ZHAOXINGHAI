@@ -11,12 +11,16 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         MainWindow.cpp \
-    ../AS-Server/ProtocolFrame.cpp \
-    ../NCX-I02X/TranslatorStr.cpp
+#    ../AS-Server/ProtocolFrame.cpp \
+#    ../NCX-I02X/TranslatorStr.cpp \
+    GNPThread.cpp
 
 HEADERS  += MainWindow.h \
-    ../Include/ProtocolFrame.h \
-    ../Include/TranslatorStr.h
+    ./include/ProtocolFrame.h \
+    ./include/TranslatorStr.h \
+    ./include/DeviceID.h \
+    ./include/Define.h \
+    GNPThread.h \
 
 FORMS    += MainWindow.ui
 
