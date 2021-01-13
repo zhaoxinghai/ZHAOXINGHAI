@@ -32,16 +32,16 @@ public:
 
     void Init(MainWindow* p);
 
-    void Run(int type);
+    void Run(int type,std::string strMac);
 
-    void RunETCS();
-    void RunINC();
+    void RunETCS(std::string strMac);
+    void RunINC(std::string strMac);
 
     eRUN_STATE   D1State;
     int          D1FlashError;
 
 protected:
-    void ETCSTelnet(SOCKET sock);
+    void ETCSTelnet(SOCKET sock,std::string strMac);
     bool ETCSWrite(SOCKET sock,const char *strWrite,int nWrite);
 
     MainWindow* m_pMain;

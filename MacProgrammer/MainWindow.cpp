@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     FrameCount = 0;
     SocketMult = SOCKET_ERROR;
     ProgPath = QApplication::applicationDirPath();
+    iniPath = ProgPath + "/MacProgrammer.ini";
     ValidByte = 0;
     LowestValidByte = 0;
     FirstMac = "";
@@ -89,6 +90,7 @@ MainWindow::MainWindow(QWidget *parent) :
     WSADATA WsaData;
     if(WSAStartup(MAKEWORD(2, 2), &WsaData) != 0 )//wsastartup成功返回0
     {
+        QMessageBox::warning(this, "警告", "Socket 初始化失败!", "OK");
         InitFlag = false;
     }
     //addGroup();
@@ -400,7 +402,9 @@ unsigned short MainWindow::checkCrc(QByteArray cmd)
     {
         Data.append(cmd.at(i));
     }
-    return CRC16Count(Data);
+    //return CRC16Count(Data);
+    //to do
+    return 0;
 }
 
 void MainWindow::dataReceived(int sock)
@@ -431,18 +435,17 @@ void MainWindow::dataReceived(int sock)
 bool MainWindow::initConfig()
 {
     bool Flag = false;
-    //QString Path = ProgPath + "/MacProgrammer.ini";
-    QString Path = "./MacProgrammer.ini";
-    QFileInfo File(Path);
+    QFileInfo File(iniPath);
     if(File.exists() && File.isFile())
     {
-        QSettings Setting(Path, QSettings::IniFormat);
+        QSettings Setting(iniPath, QSettings::IniFormat);
         ReadWait = Setting.value("T_General/T_ReadWait", 1).toInt();
         ResetWait = Setting.value("T_General/T_ResetWait", 5).toInt();
         ValidByte = Setting.value("T_General/T_ValidByte", 0).toInt();
         LowestValidByte = Setting.value("T_General/T_LowestValidByte", 0).toInt() - 1;
         FirstMac = Setting.value("T_General/T_FirstMac", "").toString() + ":";
         LastMac = Setting.value("T_General/T_LastMac", "").toString() + ":";
+
         if((ValidByte >= 1 && ValidByte <= 4) &&
                 (LowestValidByte >=0 && LowestValidByte <= 5) &&
                 (FirstMac.count(":") == 6) &&
@@ -484,6 +487,10 @@ bool MainWindow::initConfig()
         checkBoxPrintSlot(PrintStartup);
         ui->LineEditLeft->setText(QString::number(PrintLeft));
         ui->LineEditTop->setText(QString::number(PrintTop));
+    }
+    else
+    {
+        QMessageBox::warning(this, "警告", "MacProgrammer.ini 初始化失败!", "OK");
     }
     return Flag;
 }
@@ -776,7 +783,7 @@ QByteArray MainWindow::getFrame(unsigned char frameVersion, unsigned char frameF
     Cmd.append((frameData.size() >> 8) & 0x000000FF);
     Cmd.append(frameData.size() & 0x000000FF);
     Cmd.append(frameData);
-    unsigned short FrameCrC = CRC16Count(Cmd);
+    unsigned short FrameCrC = 0;//CRC16Count(Cmd);
     Cmd.append((FrameCrC >> 8) & 0x000000FF);
     Cmd.append(FrameCrC & 0x000000FF);
     QByteArray Frame;
@@ -877,8 +884,7 @@ void MainWindow::resetDevice()
 
 void MainWindow::updataFirstMac()
 {
-    QString Path = "./MacProgrammer.ini";
-    QFileInfo File(Path);
+    QFileInfo File(iniPath);
     if(File.exists() && File.isFile())
     {
         unsigned int ValidFirstMac = 0;
@@ -897,7 +903,7 @@ void MainWindow::updataFirstMac()
         }
         QString LastPart = FirstMac.section(":", LowestValidByte + 1);
         QString Mac = QString("%1%2%3").arg(FirstPart).arg(MidPart).arg(LastPart);
-        QSettings Setting(Path, QSettings::IniFormat);
+        QSettings Setting(iniPath, QSettings::IniFormat);
         Setting.setValue("T_General/T_FirstMac", RepairMac(Mac));
     }
 }
@@ -916,11 +922,10 @@ void MainWindow::initOtherConfig()
             this, SLOT(pushButtonX618StartupClickedSlot(bool)));
     connect(X618Timer, SIGNAL(timeout()), this, SLOT(x618TimerSlot()));
 
-    QString Path = "./MacProgrammer.ini";
-    QFileInfo File(Path);
+    QFileInfo File(iniPath);
     if(File.exists() && File.isFile())
     {
-        QSettings Setting(Path, QSettings::IniFormat);
+        QSettings Setting(iniPath, QSettings::IniFormat);
         int DeviceType = Setting.value("T_General/T_DeviceType", 0).toInt();
         selectDevice(DeviceType);
     }
@@ -970,11 +975,10 @@ void MainWindow::comboBoxX618ActivatedSlot(int index)
 
 void MainWindow::updataDeviceType(int type)
 {
-    QString Path = "./MacProgrammer.ini";
-    QFileInfo File(Path);
+    QFileInfo File(iniPath);
     if(File.exists() && File.isFile())
     {
-        QSettings Setting(Path, QSettings::IniFormat);
+        QSettings Setting(iniPath, QSettings::IniFormat);
         Setting.setValue("T_General/T_DeviceType", type);
     }
 }
@@ -1121,11 +1125,10 @@ void MainWindow::pushButtonX618StartupClickedSlot(bool checked)
 
 void MainWindow::initX618Arg()
 {
-    QString Path = "./MacProgrammer.ini";
-    QFileInfo File(Path);
+    QFileInfo File(iniPath);
     if(File.exists() && File.isFile())
     {
-        QSettings Setting(Path, QSettings::IniFormat);
+        QSettings Setting(iniPath, QSettings::IniFormat);
         X618ReadWait = Setting.value("T_X618/T_ReadWait", 1).toInt();
         X618ResetWait = Setting.value("T_X618/T_ResetWait", 5).toInt();
         X618ValidByte = Setting.value("T_X618/T_ValidByte", 0).toInt();
@@ -1578,8 +1581,7 @@ QList<QByteArray> MainWindow::getCmds(QByteArray data)
 
 void MainWindow::updataX618FirstMac()
 {
-    QString Path = "./MacProgrammer.ini";
-    QFileInfo File(Path);
+    QFileInfo File(iniPath);
     if(File.exists() && File.isFile())
     {
         unsigned int ValidFirstMac = 0;
@@ -1598,7 +1600,7 @@ void MainWindow::updataX618FirstMac()
         }
         QString LastPart = X618FirstMac.section(":", X618LowestValidByte + 1);
         QString Mac = QString("%1%2%3").arg(FirstPart).arg(MidPart).arg(LastPart);
-        QSettings Setting(Path, QSettings::IniFormat);
+        QSettings Setting(iniPath, QSettings::IniFormat);
         Setting.setValue("T_X618/T_FirstMac", RepairMac(Mac));
     }
 }
@@ -1628,7 +1630,7 @@ QByteArray MainWindow::getFrameLittle(unsigned char frameVersion, unsigned char 
     Cmd.append(frameData.size() & 0x000000FF);
     Cmd.append((frameData.size() >> 8) & 0x000000FF);
     Cmd.append(frameData);
-    unsigned short FrameCrC = CRC16Count(Cmd);
+    unsigned short FrameCrC = 0;//CRC16Count(Cmd);
     if(getDeviceType() == D_X618NPM)
     {
         char Hex = 0x00;
@@ -1668,11 +1670,10 @@ void MainWindow::checkBoxPrintSlot(bool checked)
     ui->WidgetPrint->setHidden(!checked);
     PrintStartup = checked;
 
-    QString Path = "./MacProgrammer.ini";
-    QFileInfo File(Path);
+    QFileInfo File(iniPath);
     if(File.exists() && File.isFile())
     {
-        QSettings Setting(Path, QSettings::IniFormat);
+        QSettings Setting(iniPath, QSettings::IniFormat);
         Setting.setValue("T_Print/T_Startup", PrintStartup);
     }
 }
@@ -1690,11 +1691,10 @@ void MainWindow::pushButtonPrinterSlot()
     {
         if(QPrinter(List.at(i)).printerName() == PrintPrinter->printerName())
         {
-            QString Path = "./MacProgrammer.ini";
-            QFileInfo File(Path);
+            QFileInfo File(iniPath);
             if(File.exists() && File.isFile())
             {
-                QSettings Setting(Path, QSettings::IniFormat);
+                QSettings Setting(iniPath, QSettings::IniFormat);
                 Setting.setValue("T_Print/T_Printer", i);
             }
             ui->LabelPrinter->setText(PrintPrinter->printerName());
@@ -1709,8 +1709,7 @@ void MainWindow::pushButtonFontSlot()
     if(Ok == true)
     {
         PrintFont = Font;
-        QString Path = "./MacProgrammer.ini";
-        QFileInfo File(Path);
+        QFileInfo File(iniPath);
         if(File.exists() && File.isFile())
         {
             QFontDatabase Fonts;
@@ -1718,7 +1717,7 @@ void MainWindow::pushButtonFontSlot()
             {
                 if(PrintFont.family() == Fonts.families().at(i))
                 {
-                    QSettings Setting(Path, QSettings::IniFormat);
+                    QSettings Setting(iniPath, QSettings::IniFormat);
                     Setting.setValue("T_Print/T_Font", QString("%1,%2,%3,%4,%5,%6").
                                      arg(i).
                                      arg(PrintFont.bold()).
@@ -1760,11 +1759,10 @@ void MainWindow::showFontInfo(QFont font)
 void MainWindow::lineEditLeftSlot(QString text)
 {
     PrintLeft = text.toInt();
-    QString Path = "./MacProgrammer.ini";
-    QFileInfo File(Path);
+    QFileInfo File(iniPath);
     if(File.exists() && File.isFile())
     {
-        QSettings Setting(Path, QSettings::IniFormat);
+        QSettings Setting(iniPath, QSettings::IniFormat);
         Setting.setValue("T_Print/T_Left", PrintLeft);
     }
 }
@@ -1772,11 +1770,10 @@ void MainWindow::lineEditLeftSlot(QString text)
 void MainWindow::lineEditTopSlot(QString text)
 {
     PrintTop = text.toInt();
-    QString Path = "./MacProgrammer.ini";
-    QFileInfo File(Path);
+    QFileInfo File(iniPath);
     if(File.exists() && File.isFile())
     {
-        QSettings Setting(Path, QSettings::IniFormat);
+        QSettings Setting(iniPath, QSettings::IniFormat);
         Setting.setValue("T_Print/T_Top", PrintTop);
     }
 }
@@ -1807,11 +1804,10 @@ void MainWindow::initD1Config()
     D1TimerID = this->startTimer(1000);
     m_GNPThread->Init(this);
 
-    QString Path = "./MacProgrammer.ini";
-    QFileInfo File(Path);
+    QFileInfo File(iniPath);
     if(File.exists() && File.isFile())
     {
-        QSettings Setting(Path, QSettings::IniFormat);
+        QSettings Setting(iniPath, QSettings::IniFormat);
 
         D1ValidByte = Setting.value("T_D1/T_ValidByte", 0).toInt();
         D1LowestValidByte = Setting.value("T_D1/T_LowestValidByte", 0).toInt() - 1;
@@ -1825,11 +1821,10 @@ void MainWindow::initD1Config()
 
 void MainWindow::pushButtonD1PreestablishClickedSlot(bool checked)
 {
-    QString Path = "./MacProgrammer.ini";
-    QFileInfo File(Path);
+    QFileInfo File(iniPath);
     if(File.exists() && File.isFile())
     {
-        QSettings Setting(Path, QSettings::IniFormat);
+        QSettings Setting(iniPath, QSettings::IniFormat);
         D1FirstMac = Setting.value("T_D1/T_FirstMac", "").toString() + ":";
     }
 
@@ -1902,7 +1897,6 @@ void MainWindow::D1SetMac()
     ui->PlainTextD1Edit->appendPlainText(QString("正在烧写第%1 PCS,所用Mac为%2.").
                                        arg(D1MacIndex + 1).arg(D1MacList.at(D1MacIndex)));
 
-    D1DeviceType = getDeviceType();
     HANDLE hThread = ::CreateThread(NULL, 0, MainWindow::ThreadProcD1,this, 0, NULL);
     CloseHandle(hThread);
 }
@@ -1921,7 +1915,9 @@ DWORD WINAPI MainWindow::ThreadProcD1(void* arg)
 
 void MainWindow::Run()
 {
-    //m_GNPThread.Run(D1DeviceType,D1FlashError,D1State);
+    int D1DeviceType = getDeviceType();
+    std::string strMac = D1MacList.at(D1MacIndex).toStdString();
+    m_GNPThread->Run(D1DeviceType,strMac);
 }
 
 void MainWindow::timerEvent( QTimerEvent *event)
@@ -2046,8 +2042,7 @@ void MainWindow::timerEvent( QTimerEvent *event)
 
 void MainWindow::updataD1FirstMac()
 {
-    QString Path = "./MacProgrammer.ini";
-    QFileInfo File(Path);
+    QFileInfo File(iniPath);
     if(File.exists() && File.isFile())
     {
         unsigned int ValidFirstMac = 0;
@@ -2065,7 +2060,7 @@ void MainWindow::updataD1FirstMac()
         }
         QString LastPart = D1FirstMac.section(":", D1LowestValidByte + 1);
         QString Mac = QString("%1%2%3").arg(FirstPart).arg(MidPart).arg(LastPart);
-        QSettings Setting(Path, QSettings::IniFormat);
+        QSettings Setting(iniPath, QSettings::IniFormat);
         Setting.setValue("T_D1/T_FirstMac", RepairMac(Mac));
     }
 }

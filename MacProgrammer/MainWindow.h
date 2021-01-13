@@ -21,7 +21,7 @@
 #include <QtSql\QtSql>
 #include <QSettings>
 #include <ws2tcpip.h>
-#include "ProtocolFrame.h"
+#include "./include/ProtocolFrame.h"
 #include "GNPThread.h"
 
 #define D_ProduceMode       0x00
@@ -93,6 +93,7 @@ private:
     unsigned short FrameCount;
     int SocketMult;
     QString ProgPath;
+    QString iniPath;
     int ValidByte;
     int LowestValidByte;
     QString FirstMac;
@@ -225,7 +226,6 @@ private:
     QString      D1LastMac;
     int          D1MacPCS;
 
-    int          D1DeviceType;
     int          D1MacIndex;
     int          D1TimerID;
 };

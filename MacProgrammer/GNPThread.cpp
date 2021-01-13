@@ -17,22 +17,21 @@ void CGNPThread::Init(MainWindow* p)
     m_pMain = p;
 }
 
-void CGNPThread::Run(int type)
+void CGNPThread::Run(int type,std::string strMac)
 {
     //create
     if(type == D_D1_ETCS)
     {
-        RunETCS();
+        RunETCS(strMac);
     }
     else if(type == D_D1_INC)
     {
-        RunINC();
+        RunINC(strMac);
     }
-    //nError = m_nError;
-    //eState = eRunState::STATE_FINISH;
+    D1State = STATE_FINISH;
 }
 
-void CGNPThread::RunETCS()
+void CGNPThread::RunETCS(std::string strMac)
 {
     SOCKET sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock != INVALID_SOCKET)
@@ -44,28 +43,27 @@ void CGNPThread::RunETCS()
         int ret = ::connect(sock, (struct sockaddr *)&svraddr, sizeof(svraddr));
         if(ret != SOCKET_ERROR)
         {
-            ETCSTelnet(sock);
+            ETCSTelnet(sock,strMac);
         }
         else
         {
-            //m_pMain->D1 = ETCS_SOCKET_CON;
+            D1FlashError = ETCS_SOCKET_CON;
         }
     }
     else
     {
-        //m_nError = ETCS_SOCKET_CREATE;
+        D1FlashError = ETCS_SOCKET_CREATE;
     }
     closesocket(sock);
 }
 
-void CGNPThread::RunINC()
+void CGNPThread::RunINC(std::string strMac)
 {
 
 }
 
-void CGNPThread::ETCSTelnet(SOCKET sock)
+void CGNPThread::ETCSTelnet(SOCKET sock,std::string strMac)
 {
-    /*
     //telnet client
     std::string strBuf;
     bool bSendCmd = false;
@@ -75,7 +73,7 @@ void CGNPThread::ETCSTelnet(SOCKET sock)
         char data = 0;
         if (recv(sock, &data, 1, 0) != 1)
         {
-            m_nError = ETCS_SOCKET_RECV;
+            D1FlashError = ETCS_SOCKET_RECV;
             break;
         }
         strBuf.push_back(data);
@@ -87,7 +85,7 @@ void CGNPThread::ETCSTelnet(SOCKET sock)
             std::string str = "etcs\r\n";
             if(!ETCSWrite(sock,str.c_str(), str.length()))
             {
-                m_nError = ETCS_SOCKET_SEND;
+                D1FlashError = ETCS_SOCKET_SEND;
                 break;
             }
             strBuf.clear();
@@ -102,10 +100,10 @@ void CGNPThread::ETCSTelnet(SOCKET sock)
         {
             bSendCmd = true;
             std::string strSend = std::string("setmac ")
-                    + D1MacList.at(D1MacIndex).toStdString() + std::string("\r\n");
+                    + strMac + std::string("\r\n");
             if(!ETCSWrite(sock,strSend.c_str(), strSend.length()))
             {
-                m_nError = ETCS_SOCKET_SEND;
+                D1FlashError = ETCS_SOCKET_SEND;
                 break;
             }
             strBuf.clear();
@@ -122,15 +120,14 @@ void CGNPThread::ETCSTelnet(SOCKET sock)
         pos = strBuf.find("OK");
         if(pos != std::string::npos)
         {
-            m_nError = ETCS_OK;
+            D1FlashError = ETCS_OK;
         }
         else
         {
-            m_nError = ETCS_RET_ERROR;
+            D1FlashError = ETCS_RET_ERROR;
         }
         break;
     }
-    */
 }
 
 bool CGNPThread::ETCSWrite(SOCKET sock,const char *strWrite,int nWrite)

@@ -16,10 +16,6 @@ SOURCES += main.cpp\
     GNPThread.cpp
 
 HEADERS  += MainWindow.h \
-    ./include/ProtocolFrame.h \
-    ./include/TranslatorStr.h \
-    ./include/DeviceID.h \
-    ./include/Define.h \
     GNPThread.h \
 
 FORMS    += MainWindow.ui
