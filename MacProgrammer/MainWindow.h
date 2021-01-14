@@ -200,6 +200,7 @@ private slots:
     void pushButtonD1PreestablishClickedSlot(bool checked);
     void pushButtonD1ExportClickedSlot();
     void pushButtonD1StartupClickedSlot(bool checked);
+    void pushComboD1(int index);
 
 private:
     void initD1Config();
@@ -219,6 +220,7 @@ public:
 
 private:
     CGNPThread  *m_GNPThread;
+
     QStringList  D1MacList;
     int          D1ValidByte;
     int          D1LowestValidByte;

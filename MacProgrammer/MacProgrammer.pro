@@ -9,11 +9,13 @@ QT       += core gui
 TARGET = MacProgrammer
 TEMPLATE = app
 
+INCLUDEPATH += ./include \
+
 SOURCES += main.cpp\
-        MainWindow.cpp \
+        GNPThread.cpp \
+        MainWindow.cpp
 #    ../AS-Server/ProtocolFrame.cpp \
 #    ../NCX-I02X/TranslatorStr.cpp \
-    GNPThread.cpp
 
 HEADERS  += MainWindow.h \
     GNPThread.h \

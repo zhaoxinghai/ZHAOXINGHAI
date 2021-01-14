@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     UdpSocket = new QUdpSocket(this);
+    m_GNPThread = new CGNPThread();
     CtrlPort = D_DeviceCtrlPort;
     ReceivePort = D_ReceivePort;
     CtrlMult = QHostAddress(D_TerminalCtrlMult).toIPv4Address();
@@ -951,10 +952,20 @@ void MainWindow::selectDevice(int type)
     case D_D1_ETCS:
         ui->TabWidgetDevice->setCurrentIndex(2);
         ui->ComboBoxD1->setCurrentIndex(0);
+        m_GNPThread->D1DeviceIndex = 0;
+        ui->label_14->setText("注意网卡的设置:\n\
+                               IP: 192.168.1.127\n\
+                               子网掩码: 255.255.255.0\n\
+                               网   关: 192.168.1.1");
         break;
     case D_D1_INC:
         ui->TabWidgetDevice->setCurrentIndex(2);
         ui->ComboBoxD1->setCurrentIndex(1);
+        m_GNPThread->D1DeviceIndex = 1;
+        ui->label_14->setText("注意网卡的设置:\n\
+                               IP: 192.168.1.200\n\
+                               子网掩码: 255.255.255.0\n\
+                               网   关: 192.168.1.1");
         break;
     }
 }
@@ -1801,6 +1812,9 @@ void MainWindow::initD1Config()
     connect(ui->PushButtonD1Startup, SIGNAL(clicked(bool)),
             this, SLOT(pushButtonD1StartupClickedSlot(bool)));
 
+    connect(ui->ComboBoxD1,SIGNAL(currentIndexChanged(int)),
+            this,SLOT(pushComboD1(int)));
+
     D1TimerID = this->startTimer(1000);
     m_GNPThread->Init(this);
 
@@ -1890,7 +1904,25 @@ void MainWindow::pushButtonD1StartupClickedSlot(bool checked)
         }
     }
 }
-
+void MainWindow::pushComboD1(int index)
+{
+    if(index==0)
+    {
+        m_GNPThread->D1DeviceIndex = 0;
+        ui->label_14->setText("注意网卡的设置:\n\
+                           IP: 192.168.1.127\n\
+                           子网掩码: 255.255.255.0\n\
+                           网   关: 192.168.1.1");
+    }
+    else
+    {
+        m_GNPThread->D1DeviceIndex = 1;
+        ui->label_14->setText("注意网卡的设置:\n\
+                           IP: 192.168.1.200\n\
+                           子网掩码: 255.255.255.0\n\
+                           网   关: 192.168.1.1");
+    }
+}
 void MainWindow::D1SetMac()
 {
     m_GNPThread->D1State = STATE_RUNING;
@@ -1915,9 +1947,8 @@ DWORD WINAPI MainWindow::ThreadProcD1(void* arg)
 
 void MainWindow::Run()
 {
-    int D1DeviceType = getDeviceType();
     std::string strMac = D1MacList.at(D1MacIndex).toStdString();
-    m_GNPThread->Run(D1DeviceType,strMac);
+    m_GNPThread->Run(strMac);
 }
 
 void MainWindow::timerEvent( QTimerEvent *event)
@@ -1931,7 +1962,7 @@ void MainWindow::timerEvent( QTimerEvent *event)
     QMessageBox MsgBox;
     MsgBox.setWindowIcon(QIcon(":/Resource/Title.png"));
 
-    if(m_GNPThread->D1FlashError == 0)
+    if(m_GNPThread->D1FlashError == ETCS_OK)
     {
         ui->GroupBoxD1Step->setTitle(QString("进度 %1/%2").arg(D1MacIndex+1).arg(D1MacPCS));
         QFile File("./" + QDate::currentDate().toString("yyyy") + ".log");
@@ -1997,6 +2028,16 @@ void MainWindow::timerEvent( QTimerEvent *event)
         {
             MsgBox.setText("MAC地址设置失败，请查看.");
             ui->PlainTextD1Edit->appendPlainText("MAC地址设置失败，请查看.");
+        }
+        else if(m_GNPThread->D1FlashError == SSH_READFILE_ERROR)
+        {
+            MsgBox.setText("SSH结果文件读失败，请查看.");
+            ui->PlainTextD1Edit->appendPlainText("SSH结果文件读失败，请查看.");
+        }
+        else if(m_GNPThread->D1FlashError == MAC_ADDRESS_ERROR)
+        {
+            MsgBox.setText("MAC地址校验失败，请查看.");
+            ui->PlainTextD1Edit->appendPlainText("MAC地址校验失败，请查看.");
         }
         else
         {

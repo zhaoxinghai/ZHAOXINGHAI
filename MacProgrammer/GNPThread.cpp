@@ -1,10 +1,15 @@
 
 #include "GNPThread.h"
+#include <windows.h>
+#include <tchar.h>
+#include <iostream>
+#include <istream>
 
 CGNPThread::CGNPThread()
 {
     D1State = STATE_NOT_RUN;
     D1FlashError = 0;
+    D1DeviceIndex = 0;
 }
 
 CGNPThread::~CGNPThread()
@@ -17,14 +22,15 @@ void CGNPThread::Init(MainWindow* p)
     m_pMain = p;
 }
 
-void CGNPThread::Run(int type,std::string strMac)
+void CGNPThread::Run(std::string strMac)
 {
-    //create
-    if(type == D_D1_ETCS)
+    D1FlashError = ETCS_SOCKET_CON;
+
+    if(D1DeviceIndex==0)
     {
         RunETCS(strMac);
     }
-    else if(type == D_D1_INC)
+    else if(D1DeviceIndex == 1)
     {
         RunINC(strMac);
     }
@@ -59,9 +65,116 @@ void CGNPThread::RunETCS(std::string strMac)
 
 void CGNPThread::RunINC(std::string strMac)
 {
+    D1FlashError = SSH_READFILE_ERROR;
 
+    SECURITY_ATTRIBUTES sa;
+    sa.nLength = sizeof(sa);
+    sa.lpSecurityDescriptor = NULL;
+    sa.bInheritHandle = TRUE;
+
+    HANDLE h = CreateFile(L"Output.txt",
+            FILE_APPEND_DATA,
+            FILE_SHARE_WRITE | FILE_SHARE_READ,
+            &sa,
+            CREATE_ALWAYS,
+            FILE_ATTRIBUTE_NORMAL,
+            NULL);
+
+    PROCESS_INFORMATION pi;
+    STARTUPINFO si;
+    BOOL ret = FALSE;
+    DWORD flags = CREATE_NO_WINDOW;
+
+    ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+    ZeroMemory(&si, sizeof(STARTUPINFO));
+    si.cb = sizeof(STARTUPINFO);
+    si.dwFlags |= STARTF_USESTDHANDLES;
+    si.hStdInput = NULL;
+    si.hStdError = h;
+    si.hStdOutput = h;
+
+    std::string sParam = "/home/admin/applications/emeabox/macconfig " + strMac + "\nifconfig";
+    std::wstring wsParam = utf8tounicode(sParam.c_str());
+
+    std::wstring sCmd =  L"plink.exe -batch -ssh root@192.168.1.200 -pw HON*emea&1357 ";
+    sCmd += wsParam;
+
+    ret = CreateProcess(NULL, (LPWSTR)sCmd.c_str(), NULL, NULL, TRUE, flags, NULL, NULL, &si, &pi);
+    WaitForSingleObject( pi.hProcess, INFINITE );
+
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+
+    CloseHandle(h);
+    CheckFileString(strMac);
 }
 
+std::string CGNPThread::GetModulePath()
+{
+    char strModule[256] = { 0 };
+    GetModuleFileNameA(NULL, strModule, 256);
+    std::string str(strModule);
+    size_t pos = str.rfind('\\');
+    std::string strTmp = str.substr(0, pos+1);
+    return strTmp;
+}
+
+std::wstring CGNPThread::GetModulePathW()
+{
+    wchar_t strModule[256] = { 0 };
+    GetModuleFileNameW(NULL, strModule, 256);
+    std::wstring str(strModule);
+    size_t pos = str.rfind(L'\\');
+    std::wstring strTmp = str.substr(0, pos+1);
+    return strTmp;
+}
+
+void CGNPThread::CheckFileString(std::string strMac)
+{
+    HANDLE hFile;
+    hFile = CreateFile(L"Output.txt", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    char ch[100];
+    DWORD dwReads;
+    ReadFile(hFile, ch, 100, &dwReads, NULL);
+    ch[dwReads] = 0;
+    CloseHandle(hFile);
+    if(dwReads==100)
+    {
+        std::string str(ch);
+        std::string sMac = str.substr(38,17);
+        if(sMac == strMac)
+        {
+            D1FlashError = ETCS_OK;
+        }
+        else
+        {
+            D1FlashError = MAC_ADDRESS_ERROR;
+        }
+    }
+}
+
+std::string CGNPThread::StrFormat(const char *szFormat, ...)
+{
+    char temp[800] = { 0 };
+    va_list args;
+    va_start(args, szFormat);
+    vsnprintf(temp, 800, szFormat, args);
+    va_end(args);
+    std::string str(temp);
+    return str;
+}
+
+std::wstring CGNPThread::utf8tounicode(const char* src)
+{
+    wchar_t* m_wchar;
+    int len = MultiByteToWideChar(CP_UTF8, 0, src, strlen(src), NULL, 0);
+    m_wchar = new wchar_t[len + 1];        //checked
+    MultiByteToWideChar(CP_UTF8, 0, src, strlen(src), m_wchar, len);
+    m_wchar[len] = L'\0';
+    std::wstring wstr = m_wchar;
+    delete[]m_wchar;
+    return wstr;
+}
 void CGNPThread::ETCSTelnet(SOCKET sock,std::string strMac)
 {
     //telnet client

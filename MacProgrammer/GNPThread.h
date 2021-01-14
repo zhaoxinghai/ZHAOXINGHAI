@@ -14,6 +14,9 @@
 #define ETCS_SOCKET_SEND      4
 #define ETCS_RET_ERROR        5
 
+#define SSH_READFILE_ERROR    6
+#define MAC_ADDRESS_ERROR     7
+
 typedef HANDLE threadhandle;
 
 enum eRUN_STATE
@@ -32,17 +35,24 @@ public:
 
     void Init(MainWindow* p);
 
-    void Run(int type,std::string strMac);
+    void Run(std::string strMac);
 
     void RunETCS(std::string strMac);
     void RunINC(std::string strMac);
 
     eRUN_STATE   D1State;
     int          D1FlashError;
+    int          D1DeviceIndex;
 
 protected:
     void ETCSTelnet(SOCKET sock,std::string strMac);
     bool ETCSWrite(SOCKET sock,const char *strWrite,int nWrite);
+
+    std::string GetModulePath();
+    std::wstring GetModulePathW();
+    std::wstring utf8tounicode(const char* src);
+    std::string StrFormat(const char *szFormat, ...);
+    void CheckFileString(std::string strMac);
 
     MainWindow* m_pMain;
 };
