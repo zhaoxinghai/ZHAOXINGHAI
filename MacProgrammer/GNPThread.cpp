@@ -65,8 +65,6 @@ void CGNPThread::RunETCS(std::string strMac)
 
 void CGNPThread::RunINC(std::string strMac)
 {
-    D1FlashError = SSH_READFILE_ERROR;
-
     SECURITY_ATTRIBUTES sa;
     sa.nLength = sizeof(sa);
     sa.lpSecurityDescriptor = NULL;
@@ -80,9 +78,13 @@ void CGNPThread::RunINC(std::string strMac)
             FILE_ATTRIBUTE_NORMAL,
             NULL);
 
+    if(h == INVALID_HANDLE_VALUE)
+    {
+        D1FlashError = SSH_CREATE_FILE_ERROR;
+        return;
+    }
     PROCESS_INFORMATION pi;
     STARTUPINFO si;
-    BOOL ret = FALSE;
     DWORD flags = CREATE_NO_WINDOW;
 
     ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
@@ -99,7 +101,12 @@ void CGNPThread::RunINC(std::string strMac)
     std::wstring sCmd =  L"plink.exe -batch -ssh root@192.168.1.200 -pw HON*emea&1357 ";
     sCmd += wsParam;
 
-    ret = CreateProcess(NULL, (LPWSTR)sCmd.c_str(), NULL, NULL, TRUE, flags, NULL, NULL, &si, &pi);
+    BOOL ret = CreateProcess(NULL, (LPWSTR)sCmd.c_str(), NULL, NULL, TRUE, flags, NULL, NULL, &si, &pi);
+    if(ret==FALSE)
+    {
+        D1FlashError = SSH_PROCESS_ERROR;
+        return;
+    }
     WaitForSingleObject( pi.hProcess, INFINITE );
 
     CloseHandle(pi.hProcess);
@@ -133,7 +140,13 @@ void CGNPThread::CheckFileString(std::string strMac)
 {
     HANDLE hFile;
     hFile = CreateFile(L"Output.txt", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    char ch[100];
+    if(hFile == INVALID_HANDLE_VALUE)
+    {
+        D1FlashError = SSH_READ_FILE_ERROR;
+        return;
+    }
+
+    char ch[1000];
     DWORD dwReads;
     ReadFile(hFile, ch, 100, &dwReads, NULL);
     ch[dwReads] = 0;
@@ -150,6 +163,10 @@ void CGNPThread::CheckFileString(std::string strMac)
         {
             D1FlashError = MAC_ADDRESS_ERROR;
         }
+    }
+    else
+    {
+        D1FlashError = SSH_READ_FILE_ERROR;
     }
 }
 

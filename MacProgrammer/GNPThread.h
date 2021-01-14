@@ -14,8 +14,10 @@
 #define ETCS_SOCKET_SEND      4
 #define ETCS_RET_ERROR        5
 
-#define SSH_READFILE_ERROR    6
-#define MAC_ADDRESS_ERROR     7
+#define SSH_CREATE_FILE_ERROR 6
+#define SSH_PROCESS_ERROR     7
+#define SSH_READ_FILE_ERROR   8
+#define MAC_ADDRESS_ERROR     9
 
 typedef HANDLE threadhandle;
 

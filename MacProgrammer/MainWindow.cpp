@@ -2029,7 +2029,17 @@ void MainWindow::timerEvent( QTimerEvent *event)
             MsgBox.setText("MAC地址设置失败，请查看.");
             ui->PlainTextD1Edit->appendPlainText("MAC地址设置失败，请查看.");
         }
-        else if(m_GNPThread->D1FlashError == SSH_READFILE_ERROR)
+        else if(m_GNPThread->D1FlashError == SSH_CREATE_FILE_ERROR)
+        {
+            MsgBox.setText("创建SSH文件失败，请查看.");
+            ui->PlainTextD1Edit->appendPlainText("创建SSH文件失败，请查看.");
+        }
+        else if(m_GNPThread->D1FlashError == SSH_PROCESS_ERROR)
+        {
+            MsgBox.setText("创建SSH进程失败，请查看.");
+            ui->PlainTextD1Edit->appendPlainText("创建SSH进程失败，请查看.");
+        }
+        else if(m_GNPThread->D1FlashError == SSH_READ_FILE_ERROR)
         {
             MsgBox.setText("SSH结果文件读失败，请查看.");
             ui->PlainTextD1Edit->appendPlainText("SSH结果文件读失败，请查看.");
