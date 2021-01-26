@@ -1,0 +1,19 @@
+--- !ruby/object:IOMapList
+host_ip: 192.168.1.127
+next_address: !ruby/struct:Playlist::Address
+  channel: 10
+  title: 3
+iomap_group_arr:
+- :name: group 1
+  :entry:
+  - !ruby/struct:IOMapList::IOMapEntry
+    selected: true
+    index: 0
+    filename: "任贤齐 - 伤心太平洋.mp3"
+    channel: 10
+    title: 2
+    description: "任贤齐 - 伤心太平洋"
+    file_path: C:\Users\Administrator\Music\任贤齐 - 伤心太平洋.mp3
+    size: 
+admin_pwd: !binary |-
+  2eHa6PX29/j5+vv8/fQ=
