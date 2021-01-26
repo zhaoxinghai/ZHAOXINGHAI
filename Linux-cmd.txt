@@ -96,15 +96,295 @@ TTS interface keyboard                                                        --
 TTS interface development（Add,Edit,Remove TTS text template).                --6  days
 GuiYang airport for PAServer(Audio monitor and scu audio-logging pre-listen). --20 days
 
-使用20或者26dB增益
-30W   1个 tpa3118  24V  8欧  
-50W   2个 tpa3118  24V  4欧
-70W   3个 tpa3116  24V  2.67欧
+function ETCS
+{
+	1.0.0的用户名密码：
+	User:root/admin  pass:123456
 
-90W   4个8欧并联 tpa3116  24V  2欧（26dB时可到120W)
+	1.2.0的用户名密码
+	user:root 
+	pass:HON*emea&1357 resetpass:2352385087 defaultpass:WELLemea246800
+	Close watchdog: echo V >/dev/watchdog
 
-tpa3116(24V供电PBTL模式）
-2欧（26dB时可到120W)
-3欧 (26dB时可到80W)
-4欧 (26dB时可达60W)
-8欧 (26dB时可达30W)
+	Qt 依赖，用到的命令 windeployqt testCompileQt.exe后面的exe文件名字自行更换为自己相应的
+}
+
+转换为unix格式
+dos2unix unittest.sh
+
+function Linuxcommand
+{
+	FTP命令
+	远程登录ftp 192.168.1.217
+	下载文件 get test.txt
+	上传文件 put test.txt
+	查看传输方式 type
+	二进制传输 binary
+	ASCII方式 ascii
+	文件查找 
+	find [路径] [参数] : find . -name "test.adp" | find / -name "test.adp"
+	ls -l /usr/bin | grep python
+	解压压缩
+	解压tar -xvzf test.tar.gz
+	解压 unzip -d /temp test.zip
+	压缩 tar -czvf test.tar.gz record.adp
+	Truncate –s 100M test.test
+	fallocate -l 120000 test.test
+	DD 镜像
+	将备份文件恢复到指定盘
+	dd if=/mnt/hgfs/e/test.dd of=/dev/sdb
+}
+
+
+NFS/Mount
+sudo apt install nfs-kernel-server
+sudo gedit /etc/exports
+/nfs *(rw,sync,no_root_squash,no_subtree_check)
+Window: mount -o nolock \\192.168.1.230\nfs x:
+Linux : mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.0.107:/nfs /mnt
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/
+
+Git增加子模块：
+
+修改用户密码 
+sudo passwd zhao
+
+function Ln软链接
+{
+	ln -s /usr/bin/python3.4 /usr/bin/python
+	查看动态库依赖ldd
+
+	查看文件夹大小
+	sudo du -h --max-depth=0
+}
+
+这里是一个Shell可以将依赖列表中的文件拷贝到指定目录
+deplist=$( ldd $1 | awk '{if (match($3,"/")){ print $3}}' )
+cp $deplist $2
+
+
+
+function 从SD卡烧写系统
+{
+	Run nand_write_fit_fromSD
+	Run nand_write_boot_fromSD
+}
+
+function D1SVN 
+{
+	用户名yhua   密码：vapa090
+}
+
+Call列表：cslst  激活指令：csctrl 1 1/0
+impsetpt lr1.1
+
+functino GNP
+{
+	User:root  app:/home/admin/application/gnp_app
+	user:root 
+	pass:HON*emea&1357
+	killall run.sh
+	killall gnp_app
+
+	关闭看门狗
+	修改 Watchdog.sh 0，重启
+}
+
+function TPA3116
+{
+	使用20或者26dB增益
+	30W   1个 tpa3118  24V  8欧  
+	50W   2个 tpa3118  24V  4欧
+	70W   3个 tpa3116  24V  2.67欧
+
+	90W   4个8欧并联 tpa3116  24V  2欧（26dB时可到120W
+	
+	tpa3116(24V供电PBTL模式）
+	2欧（26dB时可到120W)
+	3欧 (26dB时可到80W)
+	4欧 (26dB时可达60W)
+	8欧 (26dB时可达30W)
+}
+
+function TCPDUMP
+{
+	1,网卡源IP地址：tcpdump -i enp2s0 src host 192.168.1.225
+}
+
+function Honeywell网站
+{
+	Id.honeywell.com
+	申请网页登录邮箱: 进入主页->进入MFA->SSO SERVER->REQUEST TOKEN
+}
+
+function speaker
+{
+	Litchee
+	User:root
+	Pass:@fhqjtgitx@
+	Install linux header: apt-get install linux-headers-$(uname -r)
+	sudo apt install bison flex texinfo zlib1g-dev gawk
+	sudo apt-get update
+	sudo apt-get install iputils-ping vim git wget xz-utils bzip2 gcc device-tree-compiler python time make
+	sudo apt-get install libncurses5-dev
+	apt-get install device-tree-compiler
+	sudo apt-get install python
+	去除:hardware handling: rtl8723
+	配置Flash
+	(1)cd u-boot/
+	导入配置：make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- LicheePi_Zero_defconfig
+	手动配置：make ARCH=arm menuconfig
+	编译：make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
+
+	./tools/binman/binman u-boot-sunxi-with-spl.bin(修改Makefile，直接调用py命令文件
+	输入账号root密码licheepi，登陆到系统
+
+	错误解决：
+	https://www.freesion.com/article/2940354031/
+    
+    文件系统加载错误jffs2
+    https://www.kancloud.cn/lichee/lpi0/470834
+    
+	SPI sunxi-tools 下载
+	http://www.yz0228.com/index.php/2019/11/08/lichee_zero_spi_start/#1-3
+	烧写 sunxi-tools
+	sudo dd if=fel-sdboot.sunxi of=/dev/mmcblk0 bs=1024 seek=8
+	烧写 uboot到SD卡
+	sudo dd if=u-boot-sunxi-with-spl.bin of=/dev/sdf bs=1024 seek=8
+	挂载sd卡：
+	mount -t vfat  /dev/mmcblk0p2 /mnt/ 
+	mount -t vfat -o rw,iocharset=utf8,umask=000 /dev/mmcblk0p2 /mnt/
+	最新修改：取消SD卡。
+	取消静音：
+	amixer -c 0 sset 'Headphone',0 70% unmute
+	amixer -c 0 sset 'DAC',0 20 unmute
+
+	amixer -c 0 cset numid=12 2		使能mic1
+	arecord -D hw:0,0 -f S16_LE -r 48000 tmp.wav	录音测试
+
+	mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.9:/nfs /mnt
+
+	echo 32 > /sys/class/gpio/export
+	echo 33 > /sys/class/gpio/export   using
+	echo "out" > /sys/class/gpio/gpio32/direction
+	echo "out" > /sys/class/gpio/gpio33/direction
+	echo 0 > /sys/class/gpio/gpio33/value    level high
+	echo 1 > /sys/class/gpio/gpio33/value    level low （open）
+
+	mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.0.11:/nfs /mnt
+}
+
+
+设置编译安装目录：
+./configure --prefix=/usr/local/samba
+
+● 修改环境变量 /etc/profile增加以下内容(当前用户 /Home/.bashrc或/home/.bash_profile)
+  #在PATH中找到可执行文件程序的路径: export PATH=$PATH:$HOME/bin 
+  #gcc找到头文件的路径 export C_INCLUDE_PATH=/usr/include/libxml2:/MyLib
+  #g++找到头文件的路径 export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/usr/include/libxml2:/MyLib
+  #找到动态链接库的路径 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt
+  #找到静态库的路径 export LIBRARY_PATH=$LIBRARY_PATH:/MyLib
+● 软链接命令 ln -s 源目录 目标快捷方式
+● 显示进程 ps top 
+show thread:
+top -p "pidof process"
+top -H -p "pidof process"   线
+● aplay与arecord命令
+  arecord -c 1 -r 44100 -f S16_LE test.wmv
+  aplay test.wmv
+  一边采集一边播放: 
+  arecord -r48000 -c 2 -f S16_LE | aplay -r48000 -c 2
+ arecord -r48000 -c 2 -f S16_LE | aplay -r48000 -c 2
+
+aplay -D plughw:7,0 -c 1 -r48000 -f S16_LE /mnt/005_music.wav
+
+● 查看应用安装路径： which aplay; which gcc 
+● 查看应用依赖项：ldd aplay
+● 查看ssh是否安装：ps -s | grep ssh 
+● 挂载visualBox共享文件夹：sudo mount -t vboxsf OS ~/OS/
+  设置好共享名后，进入Ubuntu系统:sudo usermod -aG vboxsf <your username>
+● NFS共享
+  #sudo apt-get install nfs-kernel-server
+  #sudo gedit  /etc/exports add item"/home/zhao/ETCS/Bin *(rw,sync,no_root_squash,no_subtree_check)"
+  #sudo /etc/init.d/nfs-kernel-server restart
+● 查看设备列表:sudo fdisk -l
+● 设置启动项 vi /etc/rc.local
+SCU ubuntu:
+1,install mpg123-1.12.1.tar.bz2
+2,install ffmpeg-0.5.1.tar.gz
+install busybox
+
+● sudo dd if=./kali.iso of=/dev/sdb
+https://acsjira.honeywell.com/browse/GNP-3081 
+
+TTS
+Tts Server IP:10.137.20.100
+Scu: 10:137:20:155
+DOM:10.137.20.151    151.1
+本机IP(160节点）: 10.137.20.2
+
+TeamViewer ID：240486697
+Pass:86m5hm
+
+
+SUSE系统
+zypper install python-pip
+
+建议共享：
+mount.vmhgfs  .host:/ /mnt
+
+qmake安装
+sudo apt-get install cmake qt5-default qtcreator
+
+samba安装
+sudo apt-get install samba 
+
+rename函数乱码
+std::string sName = CUtility::QStringtoUTF8(strName);
+std::string strFile = TOP::CCommon::StrFormat(
+			"%saudio\\record\\%s.wav",TOP::CCommon::GetModulePath().c_str(),sName.c_str());
+
+rename(m_strRecordPath.c_str(),strFile.c_str());
+
+m_Recordlist.AddRecordItem(sName,strFile);
+m_Recordlist.Save();
+m_RecordlistModel.Refresh();
+
+function 喇叭
+{
+	超小成品：22
+	小挂壁成品：35
+}
+
+
+cp libqtvirtualkeyboardplugin.so /usr/lib/qt5/plugins/platforminputcontexts/
+cp libqtvirtualkeyboardstylesplugin.so /usr/lib/qt5/qml/QtQuick/Enterprise/VirtualKeyboard/Styles/
+
+content/styles/default/style.qml 
+75      38->46
+93      52->60
+682     85->200
+696     44->80
+SelectionListItem.qml
+36      parent.height->40
+
+Keyboard.qml
+569   leftMargin：0
+570   rightMargin：0
+
+qrc:///QtQuick/Enterprise/VirtualKeyboard/Styles/content/SelectionListItem.qml:36: TypeError: Cannot read property of null
+DelegateModel::cancel: index out range 20 0
+qrc:///QtQuick/Enterprise/VirtualKeyboard/Styles/content/SelectionListItem.qml:36: TypeError: Cannot read property of null
+
+
+echo "auto lo\r\niface lo inet loopback\r\nauto eth0\r\niface eth0 inet static
+address 192.168.1.200
+netmask 255.255.255.0
+gateway 192.168.1.1
+
+理解
+理论
+
+
+cp libqtvirtualkeyboardstylesplugin.so /usr/lib/qt5/qml/QtQuick/Enterprise/VirtualKeyboard/Styles/
+cp libqtvirtualkeyboardplugin.so /usr/lib/qt5/plugins/platforminputcontexts/

@@ -1,9 +1,0 @@
-[DEFAULT]
-BASEURL=https://acswiki.honeywell.com/display/ACSNPI13/ACS+NPI+Process
-[{000214A0-0000-0000-C000-000000000046}]
-Prop3=19,11
-[InternetShortcut]
-URL=https://acswiki.honeywell.com/display/ACSNPI13/ACS+NPI+Process
-IDList=
-IconFile=https://acswiki.honeywell.com/s/en_GB/5989/aaad9997c145089d7f38b9dea0ac5b91728ef55a.19/_/favicon.ico
-IconIndex=1
