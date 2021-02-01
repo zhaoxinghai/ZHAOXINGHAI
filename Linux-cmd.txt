@@ -15,7 +15,7 @@ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- LicheePi_Zero_defconfig
 ¡ñ mount: 
 Window: mount -o nolock \\192.168.1.230\nfs x:
 Linux : mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.230:/nfs /mnt
-Linux : mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.101:/nfs /mnt
+Linux : mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.0.13:/nfs /mnt
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/
 
 Â·ÓÉÆ÷£º
