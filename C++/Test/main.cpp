@@ -1,92 +1,48 @@
-
+﻿
 #include "mysharemem.h"
 #include "memcontent.h"
 #include <assert.h>
 #include <iostream>
 #include <string.h>
 
-#ifndef WIN32
+#ifdef WIN32
+#include<windows.h>
+#include "sapi.h"
+#include <sphelper.h>
+#pragma comment(lib,"ole32.lib")
+#pragma comment(lib,"sapi.lib")
+#else
 #include <unistd.h>
 #endif
 
-void SleepMinisecond(int minisecond)
-{
-#ifdef _MSC_VER
-    Sleep(minisecond);
-#else
-    usleep(minisecond * 1000);
-#endif
-}
-
-TEST::CShareMem file;
-
-void Demo1()
-{
-    if(!file.Open() || file.m_pBuffer==NULL)
-    {
-        return;
-    }
-    TEST::CMemContent* pMem = (TEST::CMemContent*)file.m_pBuffer;
-    pMem->Init();
-
-    int a = 0;
-    while(true)
-    {
-        std::cin>>a;
-
-        {
-            TEST::CShareLock lck(&file);
-            pMem->m_Test = a;
-        }
-        file.Notify();
-    }
-}
-
-void Demo2()
-{
-    if(!file.Open() || file.m_pBuffer==NULL)
-    {
-        return;
-    }
-    TEST::CMemContent* pMem = (TEST::CMemContent*)file.m_pBuffer;
-    int a = 0;
-    while(true)
-    {
-        file.Wait();
-        {
-            TEST::CShareLock lck(&file);
-            std::cout<<pMem->m_Test<<std::endl;
-        }
-    }
-}
-
 int main(int argc, char *argv[])
 {
-    setbuf(stdout, NULL);
-
-    //loop
-    char cmd[1024];
-    while (true)
+    if (FAILED(::CoInitialize(NULL)))
     {
-        std::cout << std::endl << "#>";
-        memset(cmd,0,sizeof(cmd));
-        std::cin.getline(cmd, 1024);
-        std::string str(cmd);
-
-        if(str == "1")
+        return 0;
+    }
+    ISpVoice * pVoice = NULL;
+    HRESULT hr = CoCreateInstance(CLSID_SpVoice, NULL, CLSCTX_ALL,IID_ISpVoice, (void **)&pVoice);
+    if (SUCCEEDED(hr))
+    {
+        CComPtr<ISpStream>cpWavStream;
+        CComPtr<ISpStreamFormat>cpOldStream;
+        CSpStreamFormat originalFmt;
+        pVoice ->GetOutputStream(&cpOldStream);
+        originalFmt.AssignFormat(cpOldStream);
+        hr = SPBindToFile(L"C:\\Users\\h158837\\Desktop\\output.wav", SPFM_CREATE_ALWAYS,
+            &cpWavStream, &originalFmt.FormatId(),
+            originalFmt.WaveFormatExPtr());
+        if (SUCCEEDED(hr))
         {
-            Demo1();
-        }
-        else if(str == "2")
-        {
-            Demo2();
-        }
-        else
-        {
-            break;
+            pVoice ->SetOutput(cpWavStream, TRUE);
+            WCHAR WTX[] = L"＜VOICE REQUIRED=''NAME=Microsoft Mary''/＞我赵星海";
+            pVoice ->Speak(WTX, SPF_IS_XML, NULL);
+            pVoice ->Release();
+            pVoice = NULL;
         }
     }
-    printf("Exit");
-    SleepMinisecond(5000);
+    ::CoUninitialize();
+
     return 0;
 }
