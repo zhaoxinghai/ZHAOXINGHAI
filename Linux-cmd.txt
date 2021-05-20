@@ -1,27 +1,36 @@
 ● ETCS:
-user:root pass:HON*emea&1357 resetpass:2352385087 defaultpass:WELLemea246800
+user:root 
+pass:
+HON*emea&1357 resetpass:2352385087 defaultpass:WELLemea2468000
 echo V >/dev/watchdog
-endsignal:
-endSignalData
+
+
+xxWELLemea2468022
 
 GNP:
 killall run.sh
 killall gnp_app
 
-Litchee
-export PATH=$PATH:/opt/gcc-linaro-6.3.1-2017.02-x86_64_arm-linux-gnueabihf/bin
-make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- LicheePi_Zero_defconfig
+fe ff 00 ff 00 01 00 00 7f 01 00 70 00 1a 88 00 64 01 0b 0f 1e 04 08 00 00 07 e5 00 00 02 01 10 00 01 00 01 10 00 02 01 b2 fd
+                                          sid         |time....................|    |num|
+										  
+Qt清除缓存
+C:\Users\h158837\AppData\Local\cache
 
 ● mount: 
 Window: mount -o nolock \\192.168.1.230\nfs x:
-Linux : mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.103:/nfs /mnt
+Linux : mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.1.110:/nfs /mnt
 Linux : mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.0.13:/nfs /mnt
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/Bin/
 
 路由器：
 TPLINK-8589
 useradmin
 12345678
+
+Litchee
+export PATH=$PATH:/opt/gcc-linaro-6.3.1-2017.02-x86_64_arm-linux-gnueabihf/bin
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- LicheePi_Zero_defconfig
 
 ● 文件查找 find [路径] [参数] : find . -name "test.adp" | find / -name "test.adp"
 ● 解压 tar -xvzf test.tar.gz
@@ -78,15 +87,6 @@ sculinux-install.sh
 sculinux-configure.sh
 sculinux-setup.sh
 
-AD下载：
-链接：https://pan.baidu.com/s/19AgRWutT08-fsmaKX7q0lQ 
-提取码：rjvd
-
-ACDC电源：
-5V-2A的13元
-
-规格：xh2.54 2p3p-12p
-
 音箱：宽155
 音箱：深105
 
@@ -141,7 +141,7 @@ sudo apt install nfs-kernel-server
 sudo gedit /etc/exports
 /nfs *(rw,sync,no_root_squash,no_subtree_check)
 Window: mount -o nolock \\192.168.1.230\nfs x:
-Linux : mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.0.107:/nfs /mnt
+Linux : mount -t nfs -o nolock,nfsvers=3,vers=3 192.168.0.108:/nfs /mnt
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/root/
 
 Git增加子模块：
@@ -188,22 +188,6 @@ functino GNP
 
 	关闭看门狗
 	修改 Watchdog.sh 0，重启
-}
-
-function TPA3116
-{
-	使用20或者26dB增益
-	30W   1个 tpa3118  24V  8欧  
-	50W   2个 tpa3118  24V  4欧
-	70W   3个 tpa3116  24V  2.67欧
-
-	90W   4个8欧并联 tpa3116  24V  2欧（26dB时可到120W
-	
-	tpa3116(24V供电PBTL模式）
-	2欧（26dB时可到120W)
-	3欧 (26dB时可到80W)
-	4欧 (26dB时可达60W)
-	8欧 (26dB时可达30W)
 }
 
 function TCPDUMP
@@ -339,24 +323,6 @@ sudo apt-get install cmake qt5-default qtcreator
 samba安装
 sudo apt-get install samba 
 
-rename函数乱码
-std::string sName = CUtility::QStringtoUTF8(strName);
-std::string strFile = TOP::CCommon::StrFormat(
-			"%saudio\\record\\%s.wav",TOP::CCommon::GetModulePath().c_str(),sName.c_str());
-
-rename(m_strRecordPath.c_str(),strFile.c_str());
-
-m_Recordlist.AddRecordItem(sName,strFile);
-m_Recordlist.Save();
-m_RecordlistModel.Refresh();
-
-function 喇叭
-{
-	超小成品：22
-	小挂壁成品：35
-}
-
-
 cp libqtvirtualkeyboardplugin.so /usr/lib/qt5/plugins/platforminputcontexts/
 cp libqtvirtualkeyboardstylesplugin.so /usr/lib/qt5/qml/QtQuick/Enterprise/VirtualKeyboard/Styles/
 
@@ -377,14 +343,42 @@ DelegateModel::cancel: index out range 20 0
 qrc:///QtQuick/Enterprise/VirtualKeyboard/Styles/content/SelectionListItem.qml:36: TypeError: Cannot read property of null
 
 
-echo "auto lo\r\niface lo inet loopback\r\nauto eth0\r\niface eth0 inet static
-address 192.168.1.200
-netmask 255.255.255.0
-gateway 192.168.1.1
-
-理解
-理论
-
-
 cp libqtvirtualkeyboardstylesplugin.so /usr/lib/qt5/qml/QtQuick/Enterprise/VirtualKeyboard/Styles/
 cp libqtvirtualkeyboardplugin.so /usr/lib/qt5/plugins/platforminputcontexts/
+
+查看组播信息
+netsh interface ip show joins
+
+
+ETCS 和 INC SonarQube问题
+INC错误报告，已经有线路的错误
+INC音量控制（单独做INC的界面）
+INC定时功能（单独界面）
+Qt升级到6.0工作量评估
+
+cp $HIDE_DIR/Script/version_2.0/no_ecc608/device_cert_qa.pem $CERT_DIR
+cp $HIDE_DIR/Script/version_2.0/no_ecc608/device_qa.key $CERT_DIR
+
+ssh root用户登录
+dropbear -r /etc/dropbear/dropbear_rsa_host_key -p 22
+
+unzip imx6sx_35som_better_emmc-sdk-4.14-1.0.2-debug-latest.zip
+
+sudo sh iotgw-toolchain-3.1.sh  -d /opt/iotgw-sdk          #iotgw-toolchain-3.1.sh is the file included in the zip file
+
+0x11111111
+
+V1.0.1-T003-Schedule paging can not stop automatically when When the duration time is exceeded
+
+广州市普智星电子
+广州市达智星电子
+广州市智涵电子
+广州市海新电子
+广州市星邦电子
+广州市索纳电子
+广州市智普电子
+广州智邦电子科技有限公司
+
+V1.0.0-V003-ETCS Zone red indicator in the upper right corner still light up 
+ETCS-1830 when the paging stop playing
+Without audio playback, the partition DCS spk is always busy.

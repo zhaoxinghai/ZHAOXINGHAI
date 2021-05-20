@@ -25,6 +25,8 @@ e_SEND_ENCODE GetType(std::string strType)
         return ENCODE_G711u;
     else if(strType == "g722")
         return ENCODE_G722;
+    else if(strType == "opus")
+        return ENCODE_OPUS;
     else
         return ENCODE_UNKNOW;
 }
@@ -123,8 +125,19 @@ bool command(std::vector<std::string> &vCmd)
     return true;
 }
 
+void adpcm2opus()
+{
+    CPrintTime tm("adpcm2opus");
+
+    CAudioPlay play(LOCAL_OPUS);
+    play.adpcm2opus();
+}
+
 int main(int count,char** arg)
 {
+    adpcm2opus();
+    return 1;
+
     //start audio thread
     g_ThreadPool.start(8);
     g_nProcess = 1;

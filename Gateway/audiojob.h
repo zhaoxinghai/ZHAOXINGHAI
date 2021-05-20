@@ -11,6 +11,7 @@
 #include "g711.h"
 #include "g722.h"
 #include "libresample.h"
+#include "opus/opus.h"
 
 #define G722_BIT_RATE      64000   //64000/56000/48000
 #define G711_FRAME_LEN     (8000/50)
@@ -24,7 +25,8 @@ extern const int g_nWriteErrorCount;
 enum  e_PLAY_TYPE
 {
     LOCAL_ADP2NET,
-    LOCAL_ADP2LISTEN
+    LOCAL_ADP2LISTEN,
+    LOCAL_OPUS,
 };
 
 enum e_SEND_ENCODE
@@ -33,6 +35,7 @@ enum e_SEND_ENCODE
     ENCODE_G711a,
     ENCODE_G711u,
     ENCODE_G722,
+    ENCODE_OPUS,
     ENCODE_UNKNOW
 };
 
@@ -107,6 +110,7 @@ protected:
 
     void pcmToG711(bool bALaw);
     void pcmToG722();
+    void pcmToOPUS();
 
     void G711topcm(unsigned char * pBuf,int iFrame,bool bALaw);
     void G722topcm(unsigned char * pBuf,int iFrame);
@@ -151,6 +155,8 @@ protected:
 
     g722_encode_state_t   m_g722EncodeState;
     g722_decode_state_t   m_g722DecodeState;
+
+    OpusEncoder          *m_Opus_encoder;
 };
 
 #endif

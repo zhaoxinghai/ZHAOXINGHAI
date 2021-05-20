@@ -354,6 +354,10 @@ void CAudioJob::Encoding(e_SEND_ENCODE eType)
     {
         pcmToG722();
     }
+    else if(eType==ENCODE_OPUS)
+    {
+        pcmToOPUS();
+    }
 }
 
 void CAudioJob::Decoding(unsigned char* pBuf,int nFrame,e_SEND_ENCODE eType)
@@ -429,6 +433,30 @@ void CAudioJob::pcmToG722()
     uint8_t outbuf[1024];
     int outlen = g722_encode(&m_g722EncodeState, outbuf, buf, iFrame);
     m_pcmG722.write((unsigned char*)outbuf,outlen);
+}
+
+#define MAX_PACKET_SIZE (3*1276)
+
+void CAudioJob::pcmToOPUS()
+{
+    int iFrame = m_pcm48kBuffer.getUsedSize()/sizeof(float);
+    if(iFrame!=ED1AudioFrameSampleCount)
+    {
+        printf("pcmToOPUS,iFrame Error.");
+    }
+    float pcm[ED1AudioFrameSampleCount];
+    m_pcm48kBuffer.read((unsigned char*)&pcm[0],iFrame*sizeof(float));
+
+    unsigned char cbits[MAX_PACKET_SIZE];
+    int nbBytes = opus_encode_float(m_Opus_encoder, pcm, ED1AudioFrameSampleCount, cbits, MAX_PACKET_SIZE);
+    if (nbBytes<0)
+    {
+        fprintf(stderr, "encode failed: %s\n", opus_strerror(nbBytes));
+    }
+    else
+    {
+        printf("pcmToOPUS nbBytes: %d", m_chProcess, nbBytes);
+    }
 }
 
 void CAudioJob::G711topcm(unsigned char * pBuf,int iFrame,bool bALaw)

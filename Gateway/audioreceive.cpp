@@ -26,17 +26,41 @@ CAudioReceive::CAudioReceive()
     m_resamplehandle = NULL;
     m_resamplefwidth = 0;
     m_resamplefactor = 0;
+    m_Opus_encoder = NULL;
 }
 
 CAudioReceive::~CAudioReceive()
 {
+    if(m_Opus_encoder)
+    {
+        opus_encoder_destroy(m_Opus_encoder);
+    }
 }
+#define APPLICATION OPUS_APPLICATION_AUDIO
+#define BITRATE 64000
 
 void CAudioReceive::Run()
 {
     if(m_eFromCode == ENCODE_ADP)
     {
-        if(m_eToCode == ENCODE_G722)
+        if(m_eToCode == ENCODE_OPUS)
+        {
+            int err = 0;
+            m_Opus_encoder = opus_encoder_create(48000, 1, APPLICATION, &err);
+            if (err<0)
+            {
+                fprintf(stderr, "failed to create an encoder: %s\n", opus_strerror(err));
+                return;
+            }
+
+            err = opus_encoder_ctl(m_Opus_encoder, OPUS_SET_BITRATE(BITRATE));
+            if (err<0)
+            {
+                fprintf(stderr, "failed to set bitrate: %s\n", opus_strerror(err));
+                return;
+            }
+        }
+        else if(m_eToCode == ENCODE_G722)
         {
             m_resamplefactor = 0.333333333333f;
         }
@@ -261,7 +285,14 @@ void CAudioReceive::RemoteData(unsigned char * pBuf)
     Adp2PcmBuffer(pBuf + 12, ED1AudioFrameSampleCount);
 
     //resample float sample from 48k to 8k
-    ResampleFrom48k();
+    if(m_eToCode == ENCODE_OPUS)
+    {
+
+    }
+    else
+    {
+        ResampleFrom48k();
+    }
 
     //encoding
     Encoding(m_eToCode);

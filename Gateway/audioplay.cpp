@@ -1,12 +1,14 @@
 
-#ifdef WIN32
 #include "audioplay.h"
 #include "common.h"
 #include "paerror.h"
 #include "public.h"
 #include "threadcapture.h"
 
+#ifdef WIN32
 extern CThreadCapture g_ThreadCapture;
+#endif
+
 CAudioPlay::CAudioPlay(e_PLAY_TYPE type)
 {
     m_type = type;
@@ -22,9 +24,9 @@ CAudioPlay::CAudioPlay(e_PLAY_TYPE type)
     m_nSilenceFrames = 0;
     m_bSendSilence = false;
     m_nSendSilenceCount = 0;
-
+#ifdef WIN32
     m_pThreadDevice = &g_ThreadCapture;
-
+#endif
     //set adp frame count
     m_adpAudiobuffer.SetSize(ED1AudioAdpFrameCount*2);
     m_adpAudiobufferSG.SetSize(ED1AudioAdpFrameCount * 2);
@@ -95,8 +97,9 @@ void CAudioPlay::Run()
     {
         g722_encode_init(&m_g722EncodeState, G722_BIT_RATE, 0);
     }
-
+#ifdef WIN32
     g_ThreadCapture.PushRtpJob();
+#endif
 
     //init silence adp
     float sampleFloat[ED1AudioFrameSampleCount];
@@ -122,7 +125,9 @@ void CAudioPlay::Run()
     }
 
     //AudioSignal(false);
+#ifdef WIN32
     g_ThreadCapture.PopRtpJob();
+#endif
 
     if (m_bStop)
     {
@@ -447,4 +452,66 @@ void CAudioPlay::GetListeningPort(std::vector<int> &vPort)
         vPort.push_back(m_vPort[i]);
     }
 }
-#endif
+
+
+#define APPLICATION OPUS_APPLICATION_AUDIO
+#define MAX_PACKET_SIZE (3*1276)
+
+void CAudioPlay::adpcm2opus()
+{
+    std::ofstream hFile;
+    std::string strPath = "/test.adp";
+    std::string strRecordPath = "/test.opus";
+
+    hFile.open(strRecordPath.c_str(), std::ios::binary|std::ios::app);
+    if (!hFile.is_open())
+    {
+        printf("open file error,path:%s", strRecordPath.c_str());
+        return;
+    }
+
+    if(!m_audioFile.Open(strPath))
+    {
+        printf("open file error,path: %s", strPath.c_str());
+        return;
+    }
+
+    int err = 0;
+    OpusEncoder *encoder = opus_encoder_create(48000, 1, APPLICATION, &err);
+    if (err<0)
+    {
+        fprintf(stderr, "failed to create an encoder: %s\n", opus_strerror(err));
+        return;
+    }
+    while (m_audioFile.IsAdpEnough())
+    {
+        unsigned char adpData[ED1AudioAdpFrameCount + 4];
+        m_audioFile.ReadAdpFrame(&adpData[0]);
+
+        //decode adp to pcm
+        TAudioSample sample[ED1AudioFrameSampleCount];
+        memset(&sample[0], 0, sizeof(sample));
+        if (!m_audioDecoder.DecodeOk(sample, adpData))
+        {
+            printf("adpcm Decode Error,path: %s", strPath.c_str());
+            memset(&sample[0], 0, sizeof(sample));
+        }
+
+        unsigned char cbits[MAX_PACKET_SIZE];
+        int nbBytes = opus_encode_float(m_Opus_encoder, sample, ED1AudioFrameSampleCount, cbits, MAX_PACKET_SIZE);
+        if (nbBytes<0)
+        {
+            fprintf(stderr, "encode failed: %s\n", opus_strerror(nbBytes));
+        }
+        else
+        {
+            hFile.write((char*)&cbits[0], nbBytes);
+            printf("pcmToOPUS nbBytes: %d", nbBytes);
+        }
+    }
+    hFile.close();
+    if(encoder)
+    {
+        opus_encoder_destroy(m_Opus_encoder);
+    }
+}

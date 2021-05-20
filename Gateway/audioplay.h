@@ -8,8 +8,6 @@
 #ifndef AUDIO_PLAY_H
 #define AUDIO_PLAY_H
 
-#ifdef WIN32
-
 #include "audiojob.h"
 
 class CAudioPlay: public CAudioJob
@@ -30,6 +28,8 @@ public:
     void SetAudioPath(std::vector<std::string> &vPath);
     void SetEncodeType(e_SEND_ENCODE eType);
     void GetListeningPort(std::vector<int> &vPort);
+
+    void adpcm2opus();
 
 protected:    
 
@@ -80,5 +80,3 @@ protected:
 };
 
 #endif
-#endif
-

@@ -9,12 +9,13 @@ LIBS += -lOle32 -lWinMM -lshell32 -lwsock32
 
 unix{
 TARGET = test
-LIBS += -L./ -lpthread
+LIBS += -L./ -L./3party/lib -lpthread -lopus
 QMAKE_CXXFLAGS += -g
 }
 
 INCLUDEPATH=./common \
-	./g711 \
+    ./3party/include \
+    ./g711 \
     ./g722 \
     ./libresample
 
